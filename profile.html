@@ -1,23 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Profil</title>
-</head>
-<body>
+<h2>Profil</h2>
+<img id="pp" width="80">
+<input id="username">
+<button onclick="save()">Kaydet</button>
+<div class="grid" id="grid"></div>
+<script src="firebase.js"></script>
+<script src="profile.js"></script>
 
-<h2>Profil Düzenle</h2>
-
-<img id="avatarImg" width="100"><br><br>
-
-<input type="file" id="avatar"><br><br>
-<input id="username" placeholder="Kullanıcı adı"><br><br>
-
-<button onclick="saveProfile()">Kaydet</button>
-
-<script type="module" src="firebase.js"></script>
-<script type="module" src="profile.js"></script>
-
-</body>
-</html>
 
