@@ -1,33 +1,26 @@
-import {
- collection,addDoc,query,orderBy,onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db, auth } from "./firebase.js";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-let chatId="";
-
-export function openDM(otherUser){
- chatId=[auth.currentUser.uid,otherUser].sort().join("_");
- listenMessages();
-}
-
-function listenMessages(){
- const q=query(
-  collection(db,"chats",chatId,"messages"),
-  orderBy("time")
- );
- onSnapshot(q,snap=>{
-  dmBox.innerHTML="";
-  snap.forEach(d=>{
-   const m=d.data();
-   dmBox.innerHTML+=`<p>${m.from===auth.currentUser.uid?"🟢":"🔵"} ${m.text}</p>`;
+window.sendMsg = async () => {
+  await addDoc(collection(db,"messages"), {
+    text: msg.value,
+    uid: auth.currentUser.uid,
+    time: Date.now()
   });
- });
-}
+  msg.value="";
+};
 
-export async function sendDM(text){
- await addDoc(collection(db,"chats",chatId,"messages"),{
-  from:auth.currentUser.uid,
-  text,
-  time:Date.now()
- });
-}
+const q = query(collection(db,"messages"), orderBy("time"));
+onSnapshot(q, snap => {
+  messages.innerHTML="";
+  snap.forEach(d=>{
+    messages.innerHTML += `<p>${d.data().text}</p>`;
+  });
+});
+
