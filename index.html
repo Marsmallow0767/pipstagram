@@ -7,7 +7,7 @@
 <style>
 body{
   margin:0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background:#000;
   color:#fff;
 }
@@ -37,6 +37,7 @@ body{
   border-radius:6px;
   color:#fff;
   font-size:16px;
+  cursor:pointer;
 }
 
 /* HEADER */
@@ -50,6 +51,7 @@ header{
 /* FEED */
 #feed img{
   width:100%;
+  margin-bottom:10px;
 }
 
 /* BOTTOM NAV */
@@ -68,16 +70,17 @@ nav button{
   color:#fff;
   font-size:22px;
   padding:10px;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN SCREEN -->
 <div id="login">
   <h1>📸 Pipstagram</h1>
-  <input id="email" placeholder="E-posta">
+  <input id="email" type="email" placeholder="E-posta">
   <input id="pass" type="password" placeholder="Şifre">
   <button onclick="login()">Giriş Yap</button>
   <button onclick="register()">Kaydol</button>
@@ -107,32 +110,37 @@ nav button{
 </div>
 
 <!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
+<script>
 const firebaseConfig = {
-  apiKey: "API_KEY",
+  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
   authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e",
+  projectId: "pipstagram-5b98e"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-window.login = async ()=>{
-  await signInWithEmailAndPassword(auth, email.value, pass.value);
-};
+function login(){
+  auth.signInWithEmailAndPassword(
+    document.getElementById("email").value,
+    document.getElementById("pass").value
+  ).catch(e=>alert(e.message));
+}
 
-window.register = async ()=>{
-  await createUserWithEmailAndPassword(auth, email.value, pass.value);
-};
+function register(){
+  auth.createUserWithEmailAndPassword(
+    document.getElementById("email").value,
+    document.getElementById("pass").value
+  ).catch(e=>alert(e.message));
+}
 
-onAuthStateChanged(auth,user=>{
+auth.onAuthStateChanged(user=>{
   if(user){
-    login.classList.add("hidden");
-    app.classList.remove("hidden");
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
   }
 });
 </script>
@@ -144,7 +152,9 @@ onAuthStateChanged(auth,user=>{
 
 
 
+
   
+
 
 
 
