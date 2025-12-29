@@ -1,44 +1,32 @@
-import { db, auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  setDoc,
-  deleteDoc
+  doc, getDoc, collection, query, where, getDocs, addDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// URL'den UID al
-const params = new URLSearchParams(window.location.search);
-const uid = params.get("uid");
+const uid = new URLSearchParams(location.search).get("uid");
 
-// PROFİL BİLGİSİ
-const userSnap = await getDoc(doc(db,"users",uid));
-if (userSnap.exists()) {
-  usernameText.innerText = userSnap.data().username;
-  avatarImg.src = userSnap.data().avatar || "";
-}
+// PROFİL
+const userSnap = await getDoc(doc(db, "users", uid));
+usernameText.innerText = userSnap.data().username;
 
-// PAYLAŞIMLAR
-const q = query(
-  collection(db,"posts"),
-  where("uid","==",uid)
-);
+// POSTLAR
+const q = query(collection(db, "posts"), where("uid", "==", uid));
+const snap = await getDocs(q);
 
-const postsSnap = await getDocs(q);
-postsSnap.forEach(p => {
-  userPosts.innerHTML += `
-    <img src="${p.data().image}" width="100%">
-  `;
+snap.forEach(d => {
+  posts.innerHTML += `<img src="${d.data().image}" width="100%">`;
 });
 
 // TAKİP
 followBtn.onclick = async () => {
-  await setDoc(doc(db,"follows",auth.currentUser.uid+"_"+uid),{
+  await addDoc(collection(db, "follows"), {
     from: auth.currentUser.uid,
     to: uid
   });
   alert("Takip edildi ✅");
+};
+
+// DM
+dmBtn.onclick = () => {
+  location.href = "dm.html?uid=" + uid;
 };
