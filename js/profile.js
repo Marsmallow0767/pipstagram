@@ -1,23 +1,20 @@
-import { getAuth } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { auth, db } from "./app.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const auth = getAuth();
-const storage = getStorage();
-const db = getFirestore();
+const profile = document.getElementById("profile");
 
-window.uploadProfile = async () => {
-  const file = document.getElementById("photo").files[0];
-  const uid = auth.currentUser.uid;
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    profile.innerHTML = "<p>Giriş yapılmadı</p>";
+    return;
+  }
 
-  const imgRef = ref(storage, `profiles/${uid}`);
-  await uploadBytes(imgRef, file);
-  const url = await getDownloadURL(imgRef);
+  const snap = await getDoc(doc(db, "users", user.uid));
+  const data = snap.exists() ? snap.data() : {};
 
-  await setDoc(doc(db, "users", uid), {
-    photoURL: url
-  }, { merge: true });
+  profile.innerHTML = `
+    <img src="${data.photoURL || 'https://via.placeholder.com/90'}">
+    <h3>${data.username || "Kullanıcı"}</h3>
+  `;
+});
 
-  alert("Profil foto güncellendi!");
-};
-;
