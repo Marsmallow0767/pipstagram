@@ -1,82 +1,42 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { auth } from "./firebase.js";
 import {
- getFirestore,collection,addDoc,getDocs,doc,updateDoc,onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
- getAuth,onAuthStateChanged
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const app = initializeApp({
- apiKey:"API_KEY",
- authDomain:"pipstagram-5b98e.firebaseapp.com",
- projectId:"pipstagram-5b98e"
-});
+window.login = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-const db=getFirestore(app);
-const auth=getAuth(app);
-const feed=document.getElementById("feed");
-
-let currentPost=null;
-let userId="guest";
-
-// AUTH
-onAuthStateChanged(auth,u=>{ if(u) userId=u.uid });
-
-// FEED
-export async function loadFeed(){
- feed.innerHTML="";
- const snap=await getDocs(collection(db,"posts"));
- snap.forEach(d=>{
-  const p=d.data();
-  feed.innerHTML+=`
-  <div class="post">
-   <img src="${p.image}">
-   <div class="actions">
-    <button onclick="like('${d.id}')">❤️ ${p.likes||0}</button>
-    <button onclick="openComments('${d.id}')">💬</button>
-   </div>
-   <p>${p.caption}</p>
-  </div>`;
- });
-}
-loadFeed();
-
-// LIKE
-window.like=async(id)=>{
- const ref=doc(db,"posts",id);
- await updateDoc(ref,{likes:(Math.random()*100)|0});
- await addDoc(collection(db,"notifications"),{
-  text:"Bir postun beğenildi ❤️",
-  time:Date.now()
- });
- loadFeed();
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("Giriş başarılı 🎉");
+    })
+    .catch(err => alert(err.message));
 };
 
-// COMMENTS
-window.openComments=(id)=>{
- currentPost=id;
- document.getElementById("popup").style.display="flex";
-};
-window.closePopup=()=>popup.style.display="none";
-window.sendComment=async()=>{
- const txt=commentInput.value;
- if(!txt) return;
- await addDoc(collection(db,"comments"),{
-  post:currentPost,text:txt
- });
- commentInput.value="";
+window.register = function () {
+  const email = document.getElementById("regEmail").value;
+  const password = document.getElementById("regPassword").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("Kayıt başarılı 🎉");
+    })
+    .catch(err => alert(err.message));
 };
 
-// PROFILE
-window.openProfile=()=>profileEdit.style.display="flex";
-window.closeProfile=()=>profileEdit.style.display="none";
-window.saveProfile=async()=>{
- await updateDoc(doc(db,"users",userId),{
-  username:username.value
- });
- alert("Profil güncellendi");
- closeProfile();
+window.showRegister = function () {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("registerBox").style.display = "block";
 };
+
+window.showLogin = function () {
+  document.getElementById("registerBox").style.display = "none";
+  document.getElementById("loginBox").style.display = "block";
+};
+
+
 
 
 
