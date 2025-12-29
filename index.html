@@ -3,27 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>Pipstagram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-  <h1 style="color:black; text-align:center;">📸 Pipstagram</h1>
+<h1 class="logo">📸 Pipstagram</h1>
 
-  <!-- CHAT / DM -->
-  <div id="chat">
-    <div id="messages"></div>
-    <input id="msgInput" placeholder="Mesaj yaz">
-    <button onclick="sendMessage()">Gönder</button>
-  </div>
+<!-- LOGIN -->
+<div id="login">
+  <input id="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Şifre" />
+  <button onclick="login()">Giriş Yap</button>
+</div>
 
-  <!-- JS (MUTLAKA MODULE) -->
-  <script type="module" src="./js/firebase.js"></script>
-  <script type="module" src="./js/app.js"></script>
+<!-- DM -->
+<div id="chat" style="display:none">
+  <div id="messages"></div>
+  <input id="msgInput" placeholder="Mesaj yaz" />
+  <button onclick="sendMessage()">Gönder</button>
+</div>
 
+<script type="module" src="app.js"></script>
 </body>
 </html>
-
