@@ -1,22 +1,33 @@
-import { collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { db } from "./app.js";
+import {
+ collection,addDoc,query,orderBy,onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db, auth } from "./firebase.js";
 
-const uid = localStorage.getItem("uid");
-const chat = document.getElementById("messages");
+let chatId="";
 
-window.send = async ()=>{
-  await addDoc(collection(db,"messages"),{
-    from: uid,
-    to: to.value,
-    text: msg.value,
-    time: Date.now()
-  });
-};
+export function openDM(otherUser){
+ chatId=[auth.currentUser.uid,otherUser].sort().join("_");
+ listenMessages();
+}
 
-const q = query(collection(db,"messages"), where("to","==",uid));
-onSnapshot(q,snap=>{
-  chat.innerHTML="";
+function listenMessages(){
+ const q=query(
+  collection(db,"chats",chatId,"messages"),
+  orderBy("time")
+ );
+ onSnapshot(q,snap=>{
+  dmBox.innerHTML="";
   snap.forEach(d=>{
-    chat.innerHTML += `<p>${d.data().text}</p>`;
+   const m=d.data();
+   dmBox.innerHTML+=`<p>${m.from===auth.currentUser.uid?"🟢":"🔵"} ${m.text}</p>`;
   });
-});
+ });
+}
+
+export async function sendDM(text){
+ await addDoc(collection(db,"chats",chatId,"messages"),{
+  from:auth.currentUser.uid,
+  text,
+  time:Date.now()
+ });
+}
