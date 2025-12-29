@@ -1,151 +1,131 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipstagram</title>
+  <meta charset="UTF-8" />
+  <title>Pipstagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#fff;
-}
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px;
-  border-bottom:1px solid #ddd;
-}
-header h1{margin:0;font-size:22px}
-.story-bar{
-  display:flex;
-  gap:10px;
-  padding:10px;
-  overflow-x:auto;
-  border-bottom:1px solid #eee;
-}
-.story{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  border:2px solid #ff004f;
-}
-.post img{width:100%}
-.actions span{
-  font-size:22px;
-  margin-right:10px;
-  cursor:pointer;
-}
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:55px;
-  background:#fff;
-  border-top:1px solid #ddd;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-}
-.bottom-nav span{font-size:24px;cursor:pointer}
-#notifBadge{
-  background:red;
-  color:white;
-  border-radius:50%;
-  padding:2px 6px;
-  font-size:12px;
-  display:none;
-}
-</style>
+    header {
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+      border-bottom: 1px solid #222;
+    }
+
+    #feed {
+      padding-bottom: 70px;
+    }
+
+    .post {
+      margin-bottom: 20px;
+    }
+
+    .post img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .post p {
+      padding: 5px 10px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 60px;
+      background: #111;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid #222;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    #uploadModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #uploadBox {
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    #uploadBox input, #uploadBox textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    #uploadBox button {
+      width: 100%;
+      padding: 10px;
+      background: #ff0050;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
-<header>
-  <h1>📸 Pipstagram</h1>
-  <div>
-    <span onclick="location.href='notifications.html'">
-      🔔 <span id="notifBadge">0</span>
-    </span>
-    <span onclick="location.href='dm.html'">✉️</span>
-  </div>
-</header>
+<header>📸 Pipstagram</header>
 
-<!-- STORIES -->
-<div class="story-bar">
-  <img class="story" src="https://i.pravatar.cc/60?1">
-  <img class="story" src="https://i.pravatar.cc/60?2">
-  <img class="story" src="https://i.pravatar.cc/60?3">
-</div>
-
-<!-- FEED -->
 <div id="feed"></div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <span onclick="location.href='index.html'">🏠</span>
-  <span onclick="location.href='explore.html'">🔍</span>
-  <span onclick="location.href='reels.html'">🎬</span>
-  <span onclick="location.href='profile.html'">👤</span>
+<nav>
+  <button>🏠</button>
+  <button onclick="openUpload()">➕</button>
+  <button>💬</button>
+  <button>👤</button>
+</nav>
+
+<!-- UPLOAD MODAL -->
+<div id="uploadModal">
+  <div id="uploadBox">
+    <h3>Yeni Paylaşım</h3>
+    <input type="file" id="fileInput" />
+    <textarea id="captionInput" placeholder="Açıklama yaz..."></textarea>
+    <button onclick="uploadPost()">Paylaş 🚀</button>
+    <button onclick="closeUpload()" style="margin-top:10px;background:#333;">İptal</button>
+  </div>
 </div>
 
-<!-- FIREBASE + APP -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, onSnapshot, query, where } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
-  authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e",
-  storageBucket: "pipstagram-5b98e.firebasestorage.app",
-  messagingSenderId: "894857861700",
-  appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const feed = document.getElementById("feed");
-const uid = localStorage.getItem("uid") || "demo";
-
-// LOAD POSTS
-const snap = await getDocs(collection(db,"posts"));
-snap.forEach(doc=>{
-  const p = doc.data();
-  feed.innerHTML += `
-    <div class="post">
-      <img src="${p.image}">
-      <div class="actions">
-        <span>❤️ ${p.likes || 0}</span>
-        <span>💬</span>
-      </div>
-    </div>
-  `;
-});
-
-// NOTIFICATIONS
-const badge = document.getElementById("notifBadge");
-const q = query(
-  collection(db,"notifications"),
-  where("to","==",uid),
-  where("seen","==",false)
-);
-
-onSnapshot(q,s=>{
-  badge.textContent = s.size;
-  badge.style.display = s.size ? "inline-block" : "none";
-});
-</script>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
 
 
+
   
+
 
