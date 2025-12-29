@@ -1,164 +1,183 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Pipstagram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipstagram</title>
 
-    .hidden { display: none; }
-
-    button {
-      padding: 12px;
-      margin: 6px 0;
-      width: 100%;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-    }
-
-    input {
-      padding: 12px;
-      margin: 6px 0;
-      width: 100%;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-    }
-
-    #auth, #app {
-      padding: 20px;
-    }
-
-    nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-around;
-      background: #111;
-      padding: 10px 0;
-      border-top: 1px solid #333;
-    }
-
-    nav button {
-      width: auto;
-      background: none;
-      color: white;
-      font-size: 14px;
-    }
-
-    .page {
-      padding-bottom: 80px;
-    }
-
-    .post {
-      background: #111;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#000;
+  color:#fff;
+}
+.hidden{display:none}
+header{
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+  border-bottom:1px solid #222;
+}
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-around;
+  background:#111;
+  border-top:1px solid #222;
+}
+nav button{
+  background:none;
+  color:white;
+  border:none;
+  font-size:18px;
+}
+.page{padding:10px 10px 80px}
+.post{
+  background:#111;
+  margin:10px 0;
+  padding:10px;
+  border-radius:10px;
+}
+.story-bar{
+  display:flex;
+  overflow-x:auto;
+}
+.story{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#333;
+  margin-right:10px;
+  text-align:center;
+  line-height:60px;
+}
+.reel{
+  height:90vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+}
+</style>
 </head>
+
 <body>
 
-<!-- 🔐 AUTH -->
-<div id="auth">
-  <h2>Giriş Yap</h2>
+<header>Pipstagram</header>
+
+<!-- AUTH -->
+<div id="auth" class="page">
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Şifre">
   <button onclick="login()">Giriş Yap</button>
   <button onclick="register()">Kaydol</button>
 </div>
 
-<!-- 📱 APP -->
-<div id="app" class="hidden">
-  <div id="home" class="page">
-    <h2>Ana Akış</h2>
-    <div class="post">👤 kullanıcı1: İlk paylaşım</div>
-    <div class="post">👤 kullanıcı2: Merhaba Pipstagram</div>
+<!-- HOME -->
+<div id="home" class="page hidden">
+  <div class="story-bar">
+    <div class="story">A</div>
+    <div class="story">B</div>
+    <div class="story">C</div>
   </div>
-
-  <div id="reels" class="page hidden">
-    <h2>Reels</h2>
-    <div class="post">🎬 Reel video alanı</div>
-  </div>
-
-  <div id="profile" class="page hidden">
-    <h2>Profil</h2>
-    <p id="userEmail"></p>
-    <button onclick="logout()">Çıkış Yap</button>
-  </div>
-
-  <!-- 🧭 MENU -->
-  <nav>
-    <button onclick="showPage('home')">🏠</button>
-    <button onclick="showPage('reels')">🎬</button>
-    <button onclick="showPage('profile')">👤</button>
-  </nav>
+  <div id="feed"></div>
 </div>
 
-<!-- 🔥 FIREBASE -->
+<!-- REELS -->
+<div id="reels" class="page hidden">
+  <div class="reel" id="reelBox">🎬 Reel 1</div>
+</div>
+
+<!-- UPLOAD -->
+<div id="upload" class="page hidden">
+  <input id="postText" placeholder="Ne paylaşıyorsun?">
+  <button onclick="uploadPost()">Paylaş</button>
+</div>
+
+<!-- DM -->
+<div id="dm" class="page hidden">
+  <div class="post">👤 anneannem</div>
+  <div class="post">👤 arkadaş</div>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="page hidden">
+  <h3 id="userMail"></h3>
+  <button onclick="logout()">Çıkış</button>
+</div>
+
+<nav>
+  <button onclick="show('home')">🏠</button>
+  <button onclick="show('reels')">🎬</button>
+  <button onclick="show('upload')">➕</button>
+  <button onclick="show('dm')">💬</button>
+  <button onclick="show('profile')">👤</button>
+</nav>
+
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
-    authDomain: "pipstagram-5b98e.firebaseapp.com",
-    projectId: "pipstagram-5b98e",
-    storageBucket: "pipstagram-5b98e.appspot.com",
-    messagingSenderId: "894857861700",
-    appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
+  authDomain: "pipstagram-5b98e.firebaseapp.com",
+  projectId: "pipstagram-5b98e"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
 
-  function login() {
-    auth.signInWithEmailAndPassword(
-      email.value,
-      password.value
-    ).catch(e => alert(e.message));
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message))
+}
+function register(){
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message))
+}
+function logout(){auth.signOut()}
+
+auth.onAuthStateChanged(u=>{
+  if(u){
+    auth.classList?.add?.('hidden');
+    show('home');
+    userMail.innerText=u.email;
+  }else{
+    show('auth');
   }
+});
 
-  function register() {
-    auth.createUserWithEmailAndPassword(
-      email.value,
-      password.value
-    ).catch(e => alert(e.message));
-  }
+// POST UPLOAD
+function uploadPost(){
+  const div=document.createElement('div');
+  div.className='post';
+  div.innerText="👤 Sen: "+postText.value;
+  feed.prepend(div);
+  postText.value="";
+}
 
-  function logout() {
-    auth.signOut();
-  }
-
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      authDiv(false);
-      userEmail.innerText = user.email;
-    } else {
-      authDiv(true);
-    }
-  });
-
-  function authDiv(showAuth) {
-    document.getElementById("auth").classList.toggle("hidden", !showAuth);
-    document.getElementById("app").classList.toggle("hidden", showAuth);
-  }
-
-  function showPage(id) {
-    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
-  }
+// REELS SWIPE
+let reelIndex=1;
+document.getElementById('reels').addEventListener('wheel',()=>{
+  reelIndex++;
+  reelBox.innerText="🎬 Reel "+reelIndex;
+});
 </script>
 
 </body>
@@ -178,7 +197,9 @@
 
 
 
+
   
+
 
 
 
