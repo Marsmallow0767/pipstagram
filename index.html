@@ -1,23 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
 <title>Pipstagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  margin:0;
+  font-family: Arial;
+  background:#000;
+  color:#fff;
+}
+.hidden{display:none}
+
+/* LOGIN */
+#login{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+#login input{
+  width:80%;
+  padding:12px;
+  margin:6px;
+  border-radius:6px;
+  border:none;
+}
+#login button{
+  width:80%;
+  padding:12px;
+  margin-top:10px;
+  background:#0095f6;
+  border:none;
+  border-radius:6px;
+  color:#fff;
+  font-size:16px;
+}
+
+/* HEADER */
+header{
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  border-bottom:1px solid #222;
+}
+
+/* FEED */
+#feed img{
+  width:100%;
+}
+
+/* BOTTOM NAV */
+nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  background:#000;
+  border-top:1px solid #222;
+}
+nav button{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:22px;
+  padding:10px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>📸 Pipstagram</h1>
+<!-- LOGIN -->
+<div id="login">
+  <h1>📸 Pipstagram</h1>
+  <input id="email" placeholder="E-posta">
+  <input id="pass" type="password" placeholder="Şifre">
+  <button onclick="login()">Giriş Yap</button>
+  <button onclick="register()">Kaydol</button>
+</div>
 
-<input id="searchInput" placeholder="Kullanıcı ara">
-<button onclick="searchUser()">Ara</button>
-<div id="results"></div>
+<!-- APP -->
+<div id="app" class="hidden">
 
-<br><hr><br>
+<header>
+  <span>📸 Pipstagram</span>
+  <span>💬</span>
+</header>
 
-<a href="profile.html">👤 Profil</a>
+<div id="feed">
+  <img src="https://placekitten.com/400/400">
+  <img src="https://placekitten.com/401/401">
+</div>
 
-<script type="module" src="firebase.js"></script>
-<script type="module" src="search.js"></script>
+<nav>
+  <button>🏠</button>
+  <button>🔍</button>
+  <button>🎬</button>
+  <button>❤️</button>
+  <button>👤</button>
+</nav>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "pipstagram-5b98e.firebaseapp.com",
+  projectId: "pipstagram-5b98e",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.login = async ()=>{
+  await signInWithEmailAndPassword(auth, email.value, pass.value);
+};
+
+window.register = async ()=>{
+  await createUserWithEmailAndPassword(auth, email.value, pass.value);
+};
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    login.classList.add("hidden");
+    app.classList.remove("hidden");
+  }
+});
+</script>
 
 </body>
 </html>
@@ -27,6 +145,7 @@
 
 
   
+
 
 
 
