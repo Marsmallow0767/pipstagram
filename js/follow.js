@@ -1,12 +1,15 @@
-import { doc,updateDoc,arrayUnion } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { auth, db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
+import {
+  setDoc, deleteDoc, doc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-export async function follow(userId){
- await updateDoc(doc(db,"users",userId),{
-  followers:arrayUnion(auth.currentUser.uid)
- });
- await updateDoc(doc(db,"users",auth.currentUser.uid),{
-  following:arrayUnion(userId)
- });
-}
+window.followUser = async (targetUid) => {
+  await setDoc(doc(db,"follows",auth.currentUser.uid+"_"+targetUid),{
+    from: auth.currentUser.uid,
+    to: targetUid
+  });
+};
+
+window.unfollowUser = async (targetUid) => {
+  await deleteDoc(doc(db,"follows",auth.currentUser.uid+"_"+targetUid));
+};
