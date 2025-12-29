@@ -1,16 +1,21 @@
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { db } from "./app.js";
+import {
+ getStorage,ref,uploadBytes,getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { collection,addDoc } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { auth, db } from "./firebase.js";
 
-const wrap = document.body;
+const storage=getStorage();
 
-onSnapshot(collection(db,"reels"), snap=>{
-  wrap.innerHTML="";
-  snap.forEach(d=>{
-    wrap.innerHTML += `
-      <video src="${d.data().video}"
-        autoplay loop muted
-        style="width:100vw;height:100vh;object-fit:cover">
-      </video>
-    `;
-  });
-});
+export async function uploadReel(file){
+ const r=ref(storage,"reels/"+Date.now()+file.name);
+ await uploadBytes(r,file);
+ const url=await getDownloadURL(r);
+
+ await addDoc(collection(db,"reels"),{
+  video:url,
+  user:auth.currentUser.uid,
+  time:Date.now(),
+  likes:0
+ });
+}
