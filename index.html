@@ -3,166 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <title>Pipstagram</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
-:root{
---bg:#000;--text:#fff;--card:#111;
-}
-.light{
---bg:#fff;--text:#000;--card:#eee;
-}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial}
-.hidden{display:none}
-header{padding:10px;border-bottom:1px solid #333;display:flex;justify-content:space-between}
-nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:var(--bg);border-top:1px solid #333}
-nav button{background:none;border:none;color:var(--text);font-size:22px}
-section{padding:10px;padding-bottom:80px}
-button,input{padding:10px;border-radius:6px;border:none;margin:5px}
-button{background:#0095f6;color:white}
-video{width:100%;height:100vh;object-fit:cover}
-.post{background:var(--card);padding:10px;margin-bottom:10px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-.grid img{width:100%;aspect-ratio:1/1;object-fit:cover}
+body { font-family: Arial; margin:0; background:#fafafa }
+header { padding:10px; font-weight:bold; background:white }
+#feed img { width:100%; margin-top:10px }
+button { padding:8px; margin:5px }
+input { padding:8px; width:90% }
+.post { background:white; margin:10px; padding:10px }
 </style>
 </head>
 
 <body>
 
-<div id="login">
-<h2>📸 Pipstagram</h2>
-<input id="email" placeholder="E-posta">
-<input id="pass" type="password" placeholder="Şifre">
-<button onclick="register()">Kaydol</button>
-<button onclick="loginUser()">Giriş</button>
+<header>📸 Pipstagram</header>
+
+<div id="auth">
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Şifre"><br>
+  <button onclick="login()">Giriş</button>
+  <button onclick="register()">Kaydol</button>
 </div>
 
-<div id="app" class="hidden">
+<div id="app" style="display:none">
 
-<header>
-<b>Pipstagram</b>
-<div>
-<button onclick="toggleMode()">🌙</button>
-<button onclick="show('explore')">🔍</button>
-</div>
-</header>
+<h3>Paylaşım Yap</h3>
+<input id="imageUrl" placeholder="Resim URL"><br>
+<input id="caption" placeholder="Açıklama"><br>
+<button onclick="addPost()">Paylaş</button>
 
-<section id="reels"></section>
+<h3>Kullanıcı Ara</h3>
+<input id="search" placeholder="Kullanıcı adı">
+<button onclick="searchUser()">Ara</button>
+<div id="searchResult"></div>
 
-<section id="upload" class="hidden">
-<input type="file" id="postFile">
-<input id="caption" placeholder="Açıklama">
-<button onclick="uploadPost()">Paylaş</button>
-</section>
-
-<section id="explore" class="hidden"></section>
-
-<section id="profile" class="hidden">
-<h3>Profil</h3>
-<div class="grid" id="profilePosts"></div>
-</section>
-
-<nav>
-<button onclick="show('reels')">🎬</button>
-<button onclick="show('upload')">➕</button>
-<button onclick="show('profile')">👤</button>
-</nav>
+<h3>Ana Akış</h3>
+<div id="feed"></div>
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-
-<script>
-firebase.initializeApp({
-apiKey:"AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
-authDomain:"pipstagram-5b98e.firebaseapp.com",
-projectId:"pipstagram-5b98e",
-storageBucket:"pipstagram-5b98e.appspot.com"
-});
-
-const auth=firebase.auth();
-const db=firebase.firestore();
-const storage=firebase.storage();
-let reelIndex=0;
-
-function show(id){
-document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-}
-
-function toggleMode(){
-document.body.classList.toggle("light");
-}
-
-/* AUTH */
-function register(){
-auth.createUserWithEmailAndPassword(email.value,pass.value);
-}
-function loginUser(){
-auth.signInWithEmailAndPassword(email.value,pass.value);
-}
-
-auth.onAuthStateChanged(u=>{
-if(u){
-login.classList.add("hidden");
-app.classList.remove("hidden");
-loadReels();
-loadExplore();
-loadProfile();
-}
-});
-
-/* 🎬 REELS SWIPE */
-function loadReels(){
-db.collection("reels").onSnapshot(s=>{
-reels.innerHTML="";
-s.forEach(d=>{
-reels.innerHTML+=`<video src="${d.data().url}" muted autoplay loop></video>`;
-});
-});
-reels.addEventListener("wheel",e=>{
-if(e.deltaY>0) reelIndex++;
-else reelIndex--;
-reelIndex=Math.max(0,reelIndex);
-reels.children[reelIndex]?.scrollIntoView({behavior:"smooth"});
-});
-}
-
-/* ➕ POST UPLOAD */
-function uploadPost(){
-const file=postFile.files[0];
-const ref=storage.ref("posts/"+Date.now()+file.name);
-ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
-db.collection("posts").add({
-uid:auth.currentUser.uid,
-url,caption:caption.value,
-likes:0
-});
-}));
-}
-
-/* 🔍 EXPLORE */
-function loadExplore(){
-db.collection("posts").orderBy("likes","desc").limit(12)
-.onSnapshot(s=>{
-explore.innerHTML="";
-s.forEach(p=>{
-explore.innerHTML+=`<img src="${p.data().url}" style="width:32%">`;
-});
-});
-}
-
-/* 👤 PROFILE */
-function loadProfile(){
-db.collection("posts").where("uid","==",auth.currentUser.uid)
-.onSnapshot(s=>{
-profilePosts.innerHTML="";
-s.forEach(p=>profilePosts.innerHTML+=`<img src="${p.data().url}">`);
-});
-}
-</script>
+<script src="app.js"></script>
 </body>
 </html>
 
@@ -176,7 +60,9 @@ s.forEach(p=>profilePosts.innerHTML+=`<img src="${p.data().url}">`);
 
 
 
+
   
+
 
 
 
