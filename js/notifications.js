@@ -1,16 +1,15 @@
-import { db, auth } from "./firebase.js";
-import { addDoc, collection } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { auth, db } from "./app.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-export async function sendNotification(to, type, postId = null) {
-  if (to === auth.currentUser.uid) return;
+const notif = document.getElementById("notifications");
 
-  await addDoc(collection(db, "notifications"), {
-    to,
-    from: auth.currentUser.uid,
-    type,
-    postId,
-    seen: false,
-    createdAt: Date.now()
+auth.onAuthStateChanged(user => {
+  if (!user) return;
+
+  onSnapshot(collection(db, "notifications", user.uid, "items"), snap => {
+    notif.innerHTML = "<h3>Bildirimler</h3>";
+    snap.forEach(n => {
+      notif.innerHTML += `<p>🔔 ${n.data().text}</p>`;
+    });
   });
-}
+});
