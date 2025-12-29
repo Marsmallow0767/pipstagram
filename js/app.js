@@ -1,81 +1,84 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy
+ getFirestore,collection,addDoc,getDocs,doc,updateDoc,onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+ getAuth,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e",
-  storageBucket: "pipstagram-5b98e.firebasestorage.app",
-  messagingSenderId: "894857861700",
-  appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
-};
+const app = initializeApp({
+ apiKey:"API_KEY",
+ authDomain:"pipstagram-5b98e.firebaseapp.com",
+ projectId:"pipstagram-5b98e"
+});
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
+const db=getFirestore(app);
+const auth=getAuth(app);
+const feed=document.getElementById("feed");
 
-const feed = document.getElementById("feed");
+let currentPost=null;
+let userId="guest";
 
-// 🟢 FEED YÜKLE
-async function loadFeed() {
-  feed.innerHTML = "";
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
+// AUTH
+onAuthStateChanged(auth,u=>{ if(u) userId=u.uid });
 
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    feed.innerHTML += `
-      <div class="post">
-        <img src="${data.image}" />
-        <p>${data.caption}</p>
-      </div>
-    `;
-  });
+// FEED
+export async function loadFeed(){
+ feed.innerHTML="";
+ const snap=await getDocs(collection(db,"posts"));
+ snap.forEach(d=>{
+  const p=d.data();
+  feed.innerHTML+=`
+  <div class="post">
+   <img src="${p.image}">
+   <div class="actions">
+    <button onclick="like('${d.id}')">❤️ ${p.likes||0}</button>
+    <button onclick="openComments('${d.id}')">💬</button>
+   </div>
+   <p>${p.caption}</p>
+  </div>`;
+ });
 }
-
 loadFeed();
 
-// 🟢 UPLOAD
-window.openUpload = () => {
-  document.getElementById("uploadModal").style.display = "flex";
+// LIKE
+window.like=async(id)=>{
+ const ref=doc(db,"posts",id);
+ await updateDoc(ref,{likes:(Math.random()*100)|0});
+ await addDoc(collection(db,"notifications"),{
+  text:"Bir postun beğenildi ❤️",
+  time:Date.now()
+ });
+ loadFeed();
 };
 
-window.closeUpload = () => {
-  document.getElementById("uploadModal").style.display = "none";
+// COMMENTS
+window.openComments=(id)=>{
+ currentPost=id;
+ document.getElementById("popup").style.display="flex";
+};
+window.closePopup=()=>popup.style.display="none";
+window.sendComment=async()=>{
+ const txt=commentInput.value;
+ if(!txt) return;
+ await addDoc(collection(db,"comments"),{
+  post:currentPost,text:txt
+ });
+ commentInput.value="";
 };
 
-window.uploadPost = async () => {
-  const file = document.getElementById("fileInput").files[0];
-  const caption = document.getElementById("captionInput").value;
-
-  if (!file) return alert("Dosya seç!");
-
-  const fileRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-  await uploadBytes(fileRef, file);
-  const imageURL = await getDownloadURL(fileRef);
-
-  await addDoc(collection(db, "posts"), {
-    image: imageURL,
-    caption: caption,
-    createdAt: Date.now()
-  });
-
-  closeUpload();
-  loadFeed();
+// PROFILE
+window.openProfile=()=>profileEdit.style.display="flex";
+window.closeProfile=()=>profileEdit.style.display="none";
+window.saveProfile=async()=>{
+ await updateDoc(doc(db,"users",userId),{
+  username:username.value
+ });
+ alert("Profil güncellendi");
+ closeProfile();
 };
+
+
 
 
 
