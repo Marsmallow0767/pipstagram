@@ -1,0 +1,79 @@
+:root {
+  --bg: #fff;
+  --text: #000;
+  --card: #fff;
+  --border: #ddd;
+}
+
+body.dark {
+  --bg: #000;
+  --text: #fff;
+  --card: #121212;
+  --border: #333;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+  font-family: system-ui;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.feed {
+  padding-bottom: 60px;
+}
+
+.post {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.post img {
+  width: 100%;
+}
+
+.actions {
+  padding: 10px;
+  font-size: 22px;
+}
+
+.likes {
+  padding: 0 10px 10px;
+  font-size: 14px;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+}
+
+.modal-content {
+  background: var(--card);
+  color: var(--text);
+  padding: 20px;
+  margin: 100px auto;
+  width: 80%;
+}
