@@ -1,17 +1,29 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { auth } from "./app.js";
+import { auth } from "./firebase.js";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.register = async ()=>{
-  const e=email.value;
-  const p=pass.value;
-  await createUserWithEmailAndPassword(auth,e,p);
-  alert("Kayıt OK");
+window.login = () => {
+  const e = email.value;
+  const p = password.value;
+  signInWithEmailAndPassword(auth, e, p);
 };
 
-window.login = async ()=>{
-  const e=email.value;
-  const p=pass.value;
-  const user = await signInWithEmailAndPassword(auth,e,p);
-  localStorage.setItem("uid",user.user.uid);
-  location.href="index.html";
+window.register = () => {
+  const e = email.value;
+  const p = password.value;
+  createUserWithEmailAndPassword(auth, e, p);
 };
+
+window.logout = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginPage.style.display = "none";
+    app.style.display = "block";
+  }
+});
+
