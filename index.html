@@ -7,13 +7,21 @@
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial}
 .hidden{display:none}
-header{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #222}
-nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;border-top:1px solid #222;background:#000}
+header{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
+nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:#000;border-top:1px solid #222}
 nav button{background:none;border:none;color:white;font-size:22px}
-section{padding:15px;padding-bottom:80px}
+section{padding:10px;padding-bottom:80px}
 input,button{padding:10px;margin:5px;border-radius:6px;border:none}
 button{background:#0095f6;color:white}
-.reel{height:90vh;display:flex;align-items:center;justify-content:center;font-size:40px;border-bottom:1px solid #111}
+
+/* REELS */
+#reels video{height:100vh;width:100%;object-fit:cover}
+
+/* PROFILE GRID */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.grid img{width:100%;aspect-ratio:1/1;object-fit:cover}
+
+/* SEARCH */
 .user{padding:10px;border-bottom:1px solid #222;cursor:pointer}
 </style>
 </head>
@@ -21,141 +29,133 @@ button{background:#0095f6;color:white}
 
 <!-- LOGIN -->
 <div id="login">
-  <h2>📸 Pipstagram</h2>
-  <input id="email" placeholder="E-posta">
-  <input id="pass" type="password" placeholder="Şifre">
-  <button onclick="register()">Kaydol</button>
-  <button onclick="loginUser()">Giriş</button>
+<h2>📸 Pipstagram</h2>
+<input id="email" placeholder="E-posta">
+<input id="pass" type="password" placeholder="Şifre">
+<button onclick="register()">Kaydol</button>
+<button onclick="loginUser()">Giriş</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="hidden">
 
 <header>
-  <b>Pipstagram</b>
-  <span onclick="show('notifications')">🔔</span>
+<b>Pipstagram</b>
+<span onclick="show('search')">🔍</span>
 </header>
 
-<section id="home">
-  <h3>Ana Sayfa</h3>
-</section>
+<section id="home">Ana Sayfa</section>
 
 <section id="reels" class="hidden"></section>
 
-<section id="dm" class="hidden">
-  <h3>DM</h3>
-  <div id="userList"></div>
-  <div id="chat" class="hidden">
-    <div id="messages"></div>
-    <input id="msgText" placeholder="Mesaj">
-    <button onclick="sendMessage()">Gönder</button>
-  </div>
+<section id="search" class="hidden">
+<input id="searchInput" placeholder="Kullanıcı ara">
+<button onclick="searchUser()">Ara</button>
+<div id="searchResult"></div>
 </section>
 
 <section id="profile" class="hidden">
-  <h3>Profil</h3>
-  <p id="myUid"></p>
-</section>
-
-<section id="notifications" class="hidden">
-  <h3>Bildirimler</h3>
-  <div id="notifyList"></div>
+<h3>Profil</h3>
+<p id="profileUid"></p>
+<button onclick="follow()">Takip Et</button>
+<div class="grid" id="postGrid"></div>
 </section>
 
 <nav>
-  <button onclick="show('home')">🏠</button>
-  <button onclick="show('reels')">🎬</button>
-  <button onclick="show('dm')">💬</button>
-  <button onclick="show('profile')">👤</button>
+<button onclick="show('home')">🏠</button>
+<button onclick="show('reels')">🎬</button>
+<button onclick="show('profile')">👤</button>
 </nav>
 
 </div>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 firebase.initializeApp({
-  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
-  authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e"
+apiKey:"AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
+authDomain:"pipstagram-5b98e.firebaseapp.com",
+projectId:"pipstagram-5b98e",
+storageBucket:"pipstagram-5b98e.appspot.com"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-let activeChat=null;
+const storage=firebase.storage();
+let currentProfile=null;
 
 function show(id){
-  document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
 }
 
 function register(){
-  auth.createUserWithEmailAndPassword(email.value,pass.value)
-    .then(r=>db.collection("users").doc(r.user.uid).set({email:email.value}));
+auth.createUserWithEmailAndPassword(email.value,pass.value)
+.then(r=>db.collection("users").doc(r.user.uid).set({username:email.value.split("@")[0]}));
 }
 
 function loginUser(){
-  auth.signInWithEmailAndPassword(email.value,pass.value);
+auth.signInWithEmailAndPassword(email.value,pass.value);
 }
 
 auth.onAuthStateChanged(u=>{
-  if(u){
-    login.classList.add("hidden");
-    app.classList.remove("hidden");
-    myUid.innerText=u.uid;
-    loadUsers();
-    loadReels();
-    loadNotifications();
-  }
+if(u){
+login.classList.add("hidden");
+app.classList.remove("hidden");
+loadReels();
+openProfile(u.uid);
+}
 });
 
-/* 1️⃣ REELS */
+/* 🎬 REELS */
 function loadReels(){
-  db.collection("reels").onSnapshot(s=>{
-    reels.innerHTML="";
-    s.forEach(d=>reels.innerHTML+=`<div class="reel">🎬 Reels</div>`);
-  });
+db.collection("reels").onSnapshot(s=>{
+reels.innerHTML="";
+s.forEach(d=>{
+reels.innerHTML+=`
+<video src="${d.data().url}" controls muted autoplay loop></video>
+`;
+});
+});
 }
 
-/* 2️⃣ DM */
-function loadUsers(){
-  db.collection("users").onSnapshot(s=>{
-    userList.innerHTML="";
-    s.forEach(d=>{
-      if(d.id!==auth.currentUser.uid)
-        userList.innerHTML+=`<div class="user" onclick="openChat('${d.id}')">${d.data().email}</div>`;
-    });
-  });
+/* 🔍 SEARCH */
+function searchUser(){
+db.collection("users").where("username","==",searchInput.value).get()
+.then(s=>{
+searchResult.innerHTML="";
+s.forEach(d=>{
+searchResult.innerHTML+=`
+<div class="user" onclick="openProfile('${d.id}')">${d.data().username}</div>
+`;
+});
+});
 }
 
-function openChat(uid){
-  activeChat=uid;
-  chat.classList.remove("hidden");
-  db.collection("dm").where("chat","==",[auth.currentUser.uid,uid].sort().join("_"))
-    .onSnapshot(s=>{
-      messages.innerHTML="";
-      s.forEach(m=>messages.innerHTML+=`<p>${m.data().text}</p>`);
-    });
+/* 👤 PROFILE */
+function openProfile(uid){
+currentProfile=uid;
+show("profile");
+profileUid.innerText=uid;
+loadPosts(uid);
 }
 
-function sendMessage(){
-  db.collection("dm").add({
-    chat:[auth.currentUser.uid,activeChat].sort().join("_"),
-    text:msgText.value
-  });
+function loadPosts(uid){
+db.collection("posts").where("uid","==",uid).onSnapshot(s=>{
+postGrid.innerHTML="";
+s.forEach(p=>postGrid.innerHTML+=`<img src="${p.data().url}">`);
+});
 }
 
-/* 4️⃣ BİLDİRİM */
-function loadNotifications(){
-  db.collection("notifications")
-    .where("to","==",auth.currentUser.uid)
-    .onSnapshot(s=>{
-      notifyList.innerHTML="";
-      s.forEach(n=>notifyList.innerHTML+=`<p>${n.data().text}</p>`);
-    });
+/* ➕ FOLLOW */
+function follow(){
+db.collection("follows").add({
+from:auth.currentUser.uid,
+to:currentProfile
+});
+alert("Takip edildi");
 }
 </script>
 </body>
@@ -168,7 +168,9 @@ function loadNotifications(){
 
 
 
+
   
+
 
 
 
