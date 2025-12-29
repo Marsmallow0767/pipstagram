@@ -1,19 +1,20 @@
-import { db, storage, auth } from "./firebase.js";
-import { addDoc, collection } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "./app.js";
 
-window.createPost = async () => {
-  const file = postFile.files[0];
-  const r = ref(storage, `posts/${Date.now()}`);
-  await uploadBytes(r, file);
-  const url = await getDownloadURL(r);
+const feed = document.getElementById("feed");
 
-  await addDoc(collection(db, "posts"), {
-    uid: auth.currentUser.uid,
-    image: url,
-    caption: caption.value,
-    likes: 0
+export async function loadPosts(){
+  const snap = await getDocs(collection(db,"posts"));
+  feed.innerHTML = "";
+  snap.forEach(doc=>{
+    const p = doc.data();
+    feed.innerHTML += `
+      <div class="post">
+        <img src="${p.image}">
+        <div class="actions">
+          <span>❤️ ${p.likes || 0}</span>
+        </div>
+      </div>
+    `;
   });
-};
+}
