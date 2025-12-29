@@ -4,44 +4,32 @@
 <meta charset="UTF-8">
 <title>Pipstagram</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{
   margin:0;
-  font-family: Arial, sans-serif;
+  font-family:Arial;
   background:#000;
   color:#fff;
 }
 .hidden{display:none}
 
-/* LOGIN */
-#login{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-}
-#login input{
+input{
   width:80%;
   padding:12px;
   margin:6px;
   border-radius:6px;
   border:none;
 }
-#login button{
-  width:80%;
-  padding:12px;
-  margin-top:10px;
-  background:#0095f6;
+
+button{
+  padding:10px;
   border:none;
   border-radius:6px;
-  color:#fff;
-  font-size:16px;
+  background:#0095f6;
+  color:white;
   cursor:pointer;
 }
 
-/* APP */
 header{
   display:flex;
   justify-content:space-between;
@@ -49,12 +37,10 @@ header{
   border-bottom:1px solid #222;
 }
 
-#feed img{
-  width:100%;
-  margin-bottom:10px;
+section{
+  padding-bottom:70px;
 }
 
-/* NAV */
 nav{
   position:fixed;
   bottom:0;
@@ -64,52 +50,93 @@ nav{
   background:#000;
   border-top:1px solid #222;
 }
+
 nav button{
   background:none;
-  border:none;
-  color:#fff;
+  color:white;
   font-size:22px;
-  padding:10px;
-  cursor:pointer;
+}
+
+/* LOGIN */
+#login{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+/* REELS */
+.reel{
+  height:80vh;
+  background:#111;
+  margin:10px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:30px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login">
   <h1>📸 Pipstagram</h1>
-  <input id="email" type="email" placeholder="E-posta">
+  <input id="email" placeholder="E-posta">
   <input id="pass" type="password" placeholder="Şifre">
   <button onclick="register()">Kaydol</button>
   <button onclick="login()">Giriş Yap</button>
 </div>
 
-<!-- APP SCREEN -->
+<!-- APP -->
 <div id="app" class="hidden">
 
 <header>
   <span>📸 Pipstagram</span>
-  <span>💬</span>
+  <span onclick="show('dm')">💬</span>
 </header>
 
-<div id="feed">
-  <img src="https://placekitten.com/400/400">
-  <img src="https://placekitten.com/401/401">
-</div>
+<section id="home">
+  <h3>🏠 Ana Sayfa</h3>
+  <img src="https://placekitten.com/400/400" width="100%">
+</section>
+
+<section id="search" class="hidden">
+  <h3>🔍 Kullanıcı Ara</h3>
+  <input placeholder="Kullanıcı adı">
+  <button>Takip Et</button>
+</section>
+
+<section id="reels" class="hidden">
+  <div class="reel">🎬 REELS 1</div>
+  <div class="reel">🎬 REELS 2</div>
+</section>
+
+<section id="dm" class="hidden">
+  <h3>💬 Mesajlar</h3>
+  <p>@anneanne</p>
+  <p>@arkadas</p>
+</section>
+
+<section id="profile" class="hidden">
+  <h3>👤 Profil</h3>
+  <button>Düzenle</button>
+  <p>Takipçi: 0 | Takip: 0</p>
+</section>
 
 <nav>
-  <button>🏠</button>
-  <button>🔍</button>
-  <button>🎬</button>
-  <button>❤️</button>
-  <button>👤</button>
+  <button onclick="show('home')">🏠</button>
+  <button onclick="show('search')">🔍</button>
+  <button onclick="show('reels')">🎬</button>
+  <button onclick="show('dm')">💬</button>
+  <button onclick="show('profile')">👤</button>
 </nav>
 
 </div>
 
-<!-- FIREBASE (COMPAT – ÇAKIŞMA YOK) -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
@@ -117,35 +144,31 @@ nav button{
 const firebaseConfig = {
   apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
   authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e",
-  storageBucket: "pipstagram-5b98e.appspot.com",
-  messagingSenderId: "894857861700",
-  appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
+  projectId: "pipstagram-5b98e"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-function register(){
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("pass").value;
+function show(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
 
-  auth.createUserWithEmailAndPassword(email, pass)
-    .catch(err => alert(err.message));
+function register(){
+  auth.createUserWithEmailAndPassword(email.value, pass.value)
+    .catch(e=>alert(e.message));
 }
 
 function login(){
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("pass").value;
-
-  auth.signInWithEmailAndPassword(email, pass)
-    .catch(err => alert(err.message));
+  auth.signInWithEmailAndPassword(email.value, pass.value)
+    .catch(e=>alert(e.message));
 }
 
-auth.onAuthStateChanged(user=>{
-  if(user){
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
+auth.onAuthStateChanged(u=>{
+  if(u){
+    login.classList.add("hidden");
+    app.classList.remove("hidden");
   }
 });
 </script>
@@ -159,6 +182,7 @@ auth.onAuthStateChanged(user=>{
 
 
   
+
 
 
 
