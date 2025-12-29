@@ -1,36 +1,17 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<title>Profil</title>
-</head>
-<body>
-
-<h2>👤 Profil</h2>
+<h2>👤 Profil Düzenle</h2>
 
 <img id="avatarImg" width="100"><br><br>
 
-<input type="file" id="avatar">
-<button onclick="saveProfile()">Profil Foto Kaydet</button>
+<input id="username" placeholder="Kullanıcı adı"><br><br>
+<input type="file" id="avatar"><br><br>
 
-<hr>
-
-<button onclick="followUser(targetUid)">➕ Takip Et</button>
-<button onclick="unfollowUser(targetUid)">❌ Takibi Bırak</button>
-
-<hr>
-
-<button onclick="logout()">Çıkış Yap</button>
-
-<script>
-  const targetUid = "TARGET_UID"; // başka kullanıcı UID
-</script>
+<button onclick="saveProfile()">Kaydet</button>
 
 <script type="module" src="firebase.js"></script>
 <script type="module" src="profile.js"></script>
-<script type="module" src="follow.js"></script>
-<script type="module" src="auth.js"></script>
 
-</body>
-</html>
+<script>
+  window.onload = loadProfile;
+</script>
+
 
