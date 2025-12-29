@@ -1,21 +1,27 @@
-import {
- getStorage,ref,uploadBytes,getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-import { collection,addDoc } from
+import { storage, db, auth } from "./firebase.js";
+import { ref, uploadBytes, getDownloadURL } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { addDoc, collection, onSnapshot } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { auth, db } from "./firebase.js";
 
-const storage=getStorage();
+window.uploadReel = async () => {
+  const file = reelFile.files[0];
+  const refVid = ref(storage, "reels/" + file.name);
+  await uploadBytes(refVid, file);
+  const url = await getDownloadURL(refVid);
 
-export async function uploadReel(file){
- const r=ref(storage,"reels/"+Date.now()+file.name);
- await uploadBytes(r,file);
- const url=await getDownloadURL(r);
+  await addDoc(collection(db,"reels"), {
+    url,
+    uid: auth.currentUser.uid
+  });
+};
 
- await addDoc(collection(db,"reels"),{
-  video:url,
-  user:auth.currentUser.uid,
-  time:Date.now(),
-  likes:0
- });
-}
+onSnapshot(collection(db,"reels"), snap => {
+  reels.innerHTML="";
+  snap.forEach(d=>{
+    reels.innerHTML += `
+      <video src="${d.data().url}" controls style="width:100%"></video>
+    `;
+  });
+});
+
