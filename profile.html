@@ -1,16 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
 <title>Profil</title>
-<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<h2>Profil</h2>
-<div id="feed"></div>
+<h2>👤 Profil</h2>
 
-<script type="module" src="js/feed.js"></script>
+<img id="avatarImg" width="100"><br><br>
+
+<input type="file" id="avatar">
+<button onclick="saveProfile()">Profil Foto Kaydet</button>
+
+<hr>
+
+<button onclick="followUser(targetUid)">➕ Takip Et</button>
+<button onclick="unfollowUser(targetUid)">❌ Takibi Bırak</button>
+
+<hr>
+
+<button onclick="logout()">Çıkış Yap</button>
+
+<script>
+  const targetUid = "TARGET_UID"; // başka kullanıcı UID
+</script>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="profile.js"></script>
+<script type="module" src="follow.js"></script>
+<script type="module" src="auth.js"></script>
 
 </body>
 </html>
+
