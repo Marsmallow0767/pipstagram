@@ -13,49 +13,45 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { auth, db } from "./app.js";
+import { sendNotification } from "./app.js";
 
-const reelsContainer = document.getElementById("reels");
+const reelsDiv = document.getElementById("reels");
 let activeReelId = null;
 
-/* =========================
-   🔥 KEŞFET ALGORİTMASI
-   Like + yorum fazla olan üstte
-========================= */
+/* 🔥 KEŞFET */
 const exploreQuery = query(
   collection(db, "reels"),
   orderBy("likeCount", "desc")
 );
 
-/* =========================
-   🎬 REELS YÜKLE
-========================= */
+/* 🎬 REELS ÇEK */
 onSnapshot(exploreQuery, snap => {
-  reelsContainer.innerHTML = "";
+  reelsDiv.innerHTML = "";
 
-  snap.forEach(docSnap => {
-    const reel = docSnap.data();
-    const reelId = docSnap.id;
+  snap.forEach(d => {
+    const r = d.data();
+    const reelId = d.id;
 
-    const reelDiv = document.createElement("div");
-    reelDiv.className = "reel";
+    const div = document.createElement("div");
+    div.className = "reel";
 
-    reelDiv.innerHTML = `
-      <video src="${reel.videoURL}" loop muted autoplay></video>
+    div.innerHTML = `
+      <video src="${r.videoURL}" loop muted autoplay></video>
 
       <div class="actions">
-        <button onclick="toggleLike('${reelId}')">❤️ ${reel.likeCount || 0}</button>
+        <button onclick="toggleLike('${reelId}', '${r.ownerUid}')">
+          ❤️ ${r.likeCount || 0}
+        </button>
         <button onclick="openComments('${reelId}')">💬</button>
       </div>
     `;
 
-    reelsContainer.appendChild(reelDiv);
+    reelsDiv.appendChild(div);
   });
 });
 
-/* =========================
-   ❤️ LIKE SİSTEMİ
-========================= */
-window.toggleLike = async (reelId) => {
+/* ❤️ LIKE */
+window.toggleLike = async (reelId, ownerUid) => {
   const uid = auth.currentUser.uid;
   const likeRef = doc(db, "reels", reelId, "likes", uid);
   const reelRef = doc(db, "reels", reelId);
@@ -64,48 +60,41 @@ window.toggleLike = async (reelId) => {
 
   if (liked.exists()) {
     await deleteDoc(likeRef);
-    await updateDoc(reelRef, {
-      likeCount: increment(-1)
-    });
+    await updateDoc(reelRef, { likeCount: increment(-1) });
   } else {
     await setDoc(likeRef, { uid });
-    await updateDoc(reelRef, {
-      likeCount: increment(1)
-    });
+    await updateDoc(reelRef, { likeCount: increment(1) });
+
+    if (uid !== ownerUid) {
+      await addDoc(collection(db, "notifications", ownerUid, "items"), {
+        text: "❤️ Gönderin beğenildi",
+        time: Date.now()
+      });
+    }
   }
 };
 
-/* =========================
-   💬 YORUM POPUP
-========================= */
+/* 💬 YORUMLAR */
 window.openComments = (reelId) => {
   activeReelId = reelId;
-  document.getElementById("commentModal").style.display = "block";
+  commentModal.style.display = "block";
 
-  const commentsDiv = document.getElementById("comments");
-  commentsDiv.innerHTML = "";
-
-  onSnapshot(
-    collection(db, "reels", reelId, "comments"),
-    snap => {
-      commentsDiv.innerHTML = "";
-      snap.forEach(c => {
-        commentsDiv.innerHTML += `<p>${c.data().text}</p>`;
-      });
-    }
-  );
+  onSnapshot(collection(db, "reels", reelId, "comments"), snap => {
+    comments.innerHTML = "";
+    snap.forEach(c => {
+      comments.innerHTML += `<p>${c.data().text}</p>`;
+    });
+  });
 };
 
 window.sendComment = async () => {
-  const input = document.getElementById("commentInput");
-  if (!input.value) return;
+  if (!commentInput.value) return;
 
   await addDoc(collection(db, "reels", activeReelId, "comments"), {
-    text: input.value,
+    text: commentInput.value,
     user: auth.currentUser.uid,
     time: Date.now()
   });
 
-  input.value = "";
+  commentInput.value = "";
 };
-
