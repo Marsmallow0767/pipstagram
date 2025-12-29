@@ -2,44 +2,152 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Pipstagram</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="style.css">
+
 <style>
-body{margin:0;font-family:-apple-system;background:#fff}
-header{display:flex;justify-content:space-between;
-padding:10px;border-bottom:1px solid #ddd}
-nav{position:fixed;bottom:0;width:100%;
-display:flex;justify-content:space-around;
-border-top:1px solid #ddd;background:#fff}
-section{padding:10px;padding-bottom:60px}
-.post img{width:100%;border-radius:10px}
-.post{margin-bottom:20px}
-.icon{font-size:22px}
-.hidden{display:none}
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#fff;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
+  border-bottom:1px solid #ddd;
+}
+
+header h1{
+  margin:0;
+  font-size:22px;
+}
+
+.story-bar{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  overflow-x:auto;
+  border-bottom:1px solid #eee;
+}
+
+.story{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  border:2px solid #ff004f;
+}
+
+.post{
+  margin-bottom:20px;
+}
+
+.post img{
+  width:100%;
+}
+
+.actions{
+  padding:8px;
+}
+
+.actions span{
+  font-size:22px;
+  margin-right:10px;
+  cursor:pointer;
+}
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:55px;
+  background:#fff;
+  border-top:1px solid #ddd;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+}
+
+.bottom-nav span{
+  font-size:24px;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header>
-  <b>📸 Pipstagram</b>
-  <span class="icon">✉️</span>
+  <h1>📸 Pipstagram</h1>
+  <span onclick="location.href='dm.html'">✉️</span>
 </header>
 
-<section id="feed"></section>
+<!-- STORIES -->
+<div class="story-bar">
+  <img class="story" src="https://i.pravatar.cc/60?1">
+  <img class="story" src="https://i.pravatar.cc/60?2">
+  <img class="story" src="https://i.pravatar.cc/60?3">
+  <img class="story" src="https://i.pravatar.cc/60?4">
+</div>
 
-<nav>
-  <span class="icon" onclick="loadFeed()">🏠</span>
-  <span class="icon" onclick="loadExplore()">🔥</span>
-  <span class="icon">➕</span>
-  <span class="icon">❤️</span>
-  <span class="icon">👤</span>
-</nav>
+<!-- FEED -->
+<div id="feed">
 
-<script type="module" src="explore-ai.js"></script>
+  <div class="post">
+    <img src="https://picsum.photos/500/400?1">
+    <div class="actions">
+      <span onclick="like()">❤️</span>
+      <span onclick="openComment()">💬</span>
+    </div>
+  </div>
+
+  <div class="post">
+    <img src="https://picsum.photos/500/400?2">
+    <div class="actions">
+      <span onclick="like()">❤️</span>
+      <span onclick="openComment()">💬</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <span onclick="location.href='index.html'">🏠</span>
+  <span onclick="location.href='explore.html'">🔍</span>
+  <span onclick="location.href='reels.html'">🎬</span>
+  <span onclick="location.href='profile.html'">👤</span>
+</div>
+
+<!-- COMMENT POPUP -->
+<div id="commentBox" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #ddd; padding:10px;">
+  <input id="commentInput" placeholder="Yorum yaz..." style="width:80%">
+  <button onclick="sendComment()">Gönder</button>
+</div>
+
+<script>
+function like(){
+  alert("❤️ Beğenildi");
+}
+
+function openComment(){
+  document.getElementById("commentBox").style.display="block";
+}
+
+function sendComment(){
+  document.getElementById("commentInput").value="";
+  document.getElementById("commentBox").style.display="none";
+}
+</script>
+
 </body>
 </html>
 
-
-
-
+  
