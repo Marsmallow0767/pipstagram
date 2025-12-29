@@ -1,18 +1,169 @@
-<header class="top">
-  <span>📸 Pipstagram</span>
-</header>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Pipstagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+    }
 
-<div id="stories" class="stories"></div>
+    .hidden { display: none; }
 
-<div id="feed"></div>
+    button {
+      padding: 12px;
+      margin: 6px 0;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
 
-<nav class="bottom">
-  <button onclick="goHome()">🏠</button>
-  <button onclick="goSearch()">🔍</button>
-  <button onclick="addPost()">➕</button>
-  <button onclick="goReels()">🎬</button>
-  <button onclick="goProfile()">👤</button>
-</nav>
+    input {
+      padding: 12px;
+      margin: 6px 0;
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    #auth, #app {
+      padding: 20px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      background: #111;
+      padding: 10px 0;
+      border-top: 1px solid #333;
+    }
+
+    nav button {
+      width: auto;
+      background: none;
+      color: white;
+      font-size: 14px;
+    }
+
+    .page {
+      padding-bottom: 80px;
+    }
+
+    .post {
+      background: #111;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 🔐 AUTH -->
+<div id="auth">
+  <h2>Giriş Yap</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Şifre">
+  <button onclick="login()">Giriş Yap</button>
+  <button onclick="register()">Kaydol</button>
+</div>
+
+<!-- 📱 APP -->
+<div id="app" class="hidden">
+  <div id="home" class="page">
+    <h2>Ana Akış</h2>
+    <div class="post">👤 kullanıcı1: İlk paylaşım</div>
+    <div class="post">👤 kullanıcı2: Merhaba Pipstagram</div>
+  </div>
+
+  <div id="reels" class="page hidden">
+    <h2>Reels</h2>
+    <div class="post">🎬 Reel video alanı</div>
+  </div>
+
+  <div id="profile" class="page hidden">
+    <h2>Profil</h2>
+    <p id="userEmail"></p>
+    <button onclick="logout()">Çıkış Yap</button>
+  </div>
+
+  <!-- 🧭 MENU -->
+  <nav>
+    <button onclick="showPage('home')">🏠</button>
+    <button onclick="showPage('reels')">🎬</button>
+    <button onclick="showPage('profile')">👤</button>
+  </nav>
+</div>
+
+<!-- 🔥 FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
+    authDomain: "pipstagram-5b98e.firebaseapp.com",
+    projectId: "pipstagram-5b98e",
+    storageBucket: "pipstagram-5b98e.appspot.com",
+    messagingSenderId: "894857861700",
+    appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  function login() {
+    auth.signInWithEmailAndPassword(
+      email.value,
+      password.value
+    ).catch(e => alert(e.message));
+  }
+
+  function register() {
+    auth.createUserWithEmailAndPassword(
+      email.value,
+      password.value
+    ).catch(e => alert(e.message));
+  }
+
+  function logout() {
+    auth.signOut();
+  }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      authDiv(false);
+      userEmail.innerText = user.email;
+    } else {
+      authDiv(true);
+    }
+  });
+
+  function authDiv(showAuth) {
+    document.getElementById("auth").classList.toggle("hidden", !showAuth);
+    document.getElementById("app").classList.toggle("hidden", showAuth);
+  }
+
+  function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+  }
+</script>
+
+</body>
+</html>
+
 
 
 
@@ -28,6 +179,7 @@
 
 
   
+
 
 
 
