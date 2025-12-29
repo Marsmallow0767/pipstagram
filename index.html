@@ -13,21 +13,14 @@ nav button{background:none;border:none;color:white;font-size:22px}
 section{padding:10px;padding-bottom:80px}
 input,button{padding:10px;margin:5px;border-radius:6px;border:none}
 button{background:#0095f6;color:white}
-
-/* REELS */
-#reels video{height:100vh;width:100%;object-fit:cover}
-
-/* PROFILE GRID */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-.grid img{width:100%;aspect-ratio:1/1;object-fit:cover}
-
-/* SEARCH */
+video{width:100%;height:100vh;object-fit:cover}
+.reelActions{position:absolute;right:10px;bottom:100px}
+.reelActions button{display:block;margin:10px 0}
 .user{padding:10px;border-bottom:1px solid #222;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login">
 <h2>📸 Pipstagram</h2>
 <input id="email" placeholder="E-posta">
@@ -40,29 +33,43 @@ button{background:#0095f6;color:white}
 
 <header>
 <b>Pipstagram</b>
-<span onclick="show('search')">🔍</span>
+<span onclick="show('notifications')">🔔</span>
 </header>
 
-<section id="home">Ana Sayfa</section>
+<section id="reels"></section>
 
-<section id="reels" class="hidden"></section>
+<section id="comments" class="hidden">
+<h3>Yorumlar</h3>
+<input id="commentText" placeholder="Yorum yaz">
+<button onclick="sendComment()">Gönder</button>
+<div id="commentList"></div>
+</section>
 
-<section id="search" class="hidden">
-<input id="searchInput" placeholder="Kullanıcı ara">
-<button onclick="searchUser()">Ara</button>
-<div id="searchResult"></div>
+<section id="dm" class="hidden">
+<h3>DM</h3>
+<div id="dmUsers"></div>
+<div id="chat" class="hidden">
+<div id="messages"></div>
+<input id="msgText" placeholder="Mesaj">
+<button onclick="sendMessage()">Gönder</button>
+</div>
 </section>
 
 <section id="profile" class="hidden">
-<h3>Profil</h3>
-<p id="profileUid"></p>
-<button onclick="follow()">Takip Et</button>
-<div class="grid" id="postGrid"></div>
+<h3>Profil Düzenle</h3>
+<input id="newUsername" placeholder="Kullanıcı adı">
+<input id="photoUrl" placeholder="Profil foto URL">
+<button onclick="saveProfile()">Kaydet</button>
+</section>
+
+<section id="notifications" class="hidden">
+<h3>Bildirimler</h3>
+<div id="notifyList"></div>
 </section>
 
 <nav>
-<button onclick="show('home')">🏠</button>
 <button onclick="show('reels')">🎬</button>
+<button onclick="show('dm')">💬</button>
 <button onclick="show('profile')">👤</button>
 </nav>
 
@@ -71,20 +78,17 @@ button{background:#0095f6;color:white}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 firebase.initializeApp({
 apiKey:"AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
 authDomain:"pipstagram-5b98e.firebaseapp.com",
-projectId:"pipstagram-5b98e",
-storageBucket:"pipstagram-5b98e.appspot.com"
+projectId:"pipstagram-5b98e"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-const storage=firebase.storage();
-let currentProfile=null;
+let activeReel=null, activeChat=null;
 
 function show(id){
 document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
@@ -95,17 +99,13 @@ function register(){
 auth.createUserWithEmailAndPassword(email.value,pass.value)
 .then(r=>db.collection("users").doc(r.user.uid).set({username:email.value.split("@")[0]}));
 }
-
-function loginUser(){
-auth.signInWithEmailAndPassword(email.value,pass.value);
-}
+function loginUser(){auth.signInWithEmailAndPassword(email.value,pass.value);}
 
 auth.onAuthStateChanged(u=>{
 if(u){
 login.classList.add("hidden");
 app.classList.remove("hidden");
-loadReels();
-openProfile(u.uid);
+loadReels(); loadDMUsers(); loadNotifications();
 }
 });
 
@@ -115,47 +115,75 @@ db.collection("reels").onSnapshot(s=>{
 reels.innerHTML="";
 s.forEach(d=>{
 reels.innerHTML+=`
-<video src="${d.data().url}" controls muted autoplay loop></video>
-`;
+<div style="position:relative">
+<video src="${d.data().url}" autoplay loop muted></video>
+<div class="reelActions">
+<button onclick="likeReel('${d.id}')">❤️</button>
+<button onclick="openComments('${d.id}')">💬</button>
+</div>
+</div>`;
 });
 });
 }
 
-/* 🔍 SEARCH */
-function searchUser(){
-db.collection("users").where("username","==",searchInput.value).get()
-.then(s=>{
-searchResult.innerHTML="";
-s.forEach(d=>{
-searchResult.innerHTML+=`
-<div class="user" onclick="openProfile('${d.id}')">${d.data().username}</div>
-`;
+/* ❤️ LIKE */
+function likeReel(id){
+db.collection("likes").doc(auth.currentUser.uid+"_"+id).set({
+reel:id, uid:auth.currentUser.uid
 });
+db.collection("notifications").add({to:"owner",text:"Reels beğenildi"});
+}
+
+/* 💬 COMMENT */
+function openComments(id){activeReel=id;show("comments");}
+function sendComment(){
+db.collection("comments").add({
+reel:activeReel,
+text:commentText.value,
+uid:auth.currentUser.uid
 });
 }
 
-/* 👤 PROFILE */
-function openProfile(uid){
-currentProfile=uid;
-show("profile");
-profileUid.innerText=uid;
-loadPosts(uid);
+/* 💬 DM */
+function loadDMUsers(){
+db.collection("users").onSnapshot(s=>{
+dmUsers.innerHTML="";
+s.forEach(u=>{
+if(u.id!==auth.currentUser.uid)
+dmUsers.innerHTML+=`<div class="user" onclick="openChat('${u.id}')">${u.data().username}</div>`;
+});
+});
 }
-
-function loadPosts(uid){
-db.collection("posts").where("uid","==",uid).onSnapshot(s=>{
-postGrid.innerHTML="";
-s.forEach(p=>postGrid.innerHTML+=`<img src="${p.data().url}">`);
+function openChat(uid){
+activeChat=uid; chat.classList.remove("hidden");
+db.collection("dm").where("chat","==",[auth.currentUser.uid,uid].sort().join("_"))
+.onSnapshot(s=>{
+messages.innerHTML="";
+s.forEach(m=>messages.innerHTML+=`<p>${m.data().text}</p>`);
+});
+}
+function sendMessage(){
+db.collection("dm").add({
+chat:[auth.currentUser.uid,activeChat].sort().join("_"),
+text:msgText.value
 });
 }
 
-/* ➕ FOLLOW */
-function follow(){
-db.collection("follows").add({
-from:auth.currentUser.uid,
-to:currentProfile
+/* 🔔 NOTIFICATIONS */
+function loadNotifications(){
+db.collection("notifications").onSnapshot(s=>{
+notifyList.innerHTML="";
+s.forEach(n=>notifyList.innerHTML+=`<p>${n.data().text}</p>`);
 });
-alert("Takip edildi");
+}
+
+/* 👤 PROFILE EDIT */
+function saveProfile(){
+db.collection("users").doc(auth.currentUser.uid).update({
+username:newUsername.value,
+photo:photoUrl.value
+});
+alert("Profil güncellendi");
 }
 </script>
 </body>
@@ -169,7 +197,9 @@ alert("Takip edildi");
 
 
 
+
   
+
 
 
 
