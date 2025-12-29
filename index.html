@@ -1,50 +1,29 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>Pipstagram</title>
+<link rel="stylesheet" href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<style>
-body { font-family: Arial; margin:0; background:#fafafa }
-header { padding:10px; font-weight:bold; background:white }
-#feed img { width:100%; margin-top:10px }
-button { padding:8px; margin:5px }
-input { padding:8px; width:90% }
-.post { background:white; margin:10px; padding:10px }
-</style>
+<script src="firebase.js"></script>
 </head>
-
 <body>
 
 <header>📸 Pipstagram</header>
 
-<div id="auth">
-  <input id="email" placeholder="Email"><br>
-  <input id="password" type="password" placeholder="Şifre"><br>
-  <button onclick="login()">Giriş</button>
-  <button onclick="register()">Kaydol</button>
-</div>
+<div id="stories"></div>
 
-<div id="app" style="display:none">
-
-<h3>Paylaşım Yap</h3>
-<input id="imageUrl" placeholder="Resim URL"><br>
-<input id="caption" placeholder="Açıklama"><br>
-<button onclick="addPost()">Paylaş</button>
-
-<h3>Kullanıcı Ara</h3>
-<input id="search" placeholder="Kullanıcı adı">
-<button onclick="searchUser()">Ara</button>
-<div id="searchResult"></div>
-
-<h3>Ana Akış</h3>
 <div id="feed"></div>
 
-</div>
+<nav>
+ <a href="search.html">🔍</a>
+ <a href="#" onclick="addPost()">➕</a>
+ <a href="reels.html">🎬</a>
+ <a href="profile.html">👤</a>
+</nav>
 
 <script src="app.js"></script>
 </body>
@@ -61,7 +40,9 @@ input { padding:8px; width:90% }
 
 
 
+
   
+
 
 
 
