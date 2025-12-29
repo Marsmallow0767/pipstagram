@@ -1,43 +1,31 @@
-import { db, auth } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "firebase/auth";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import { db } from "./app.js";
 
-let chatId;
+const auth = getAuth();
 
-window.openChat = uid => {
-  chat.style.display = "block";
-  chatId = [auth.currentUser.uid, uid].sort().join("_");
+function chatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
 
-  const q = query(
-    collection(db, "chats", chatId, "messages"),
-    orderBy("createdAt")
-  );
+window.sendDM = async (toUid, text) => {
+  const cid = chatId(auth.currentUser.uid, toUid);
 
-  onSnapshot(q, snap => {
-    messages.innerHTML = "";
-    snap.forEach(d => {
-      messages.innerHTML += `<p>${d.data().text}</p>`;
-    });
+  await addDoc(collection(db, "chats", cid, "messages"), {
+    text,
+    sender: auth.currentUser.uid,
+    time: Date.now()
   });
 };
 
-window.sendMessage = async () => {
-  if (!msgInput.value) return;
+window.loadDM = (toUid) => {
+  const cid = chatId(auth.currentUser.uid, toUid);
 
-  await addDoc(
-    collection(db, "chats", chatId, "messages"),
-    {
-      from: auth.currentUser.uid,
-      text: msgInput.value,
-      createdAt: Date.now()
-    }
-  );
-
-  msgInput.value = "";
+  onSnapshot(collection(db, "chats", cid, "messages"), snap => {
+    messages.innerHTML = "";
+    snap.forEach(d => {
+      messages.innerHTML += `<div>${d.data().text}</div>`;
+    });
+  });
 };
 
