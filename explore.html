@@ -1,13 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Keşfet</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Pipstagram Keşfet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#fafafa}
+header{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  font-size:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+}
+.grid img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+}
+</style>
 </head>
+
 <body>
-<h2>Keşfet</h2>
-<div id="feed"></div>
-<script type="module" src="js/feed.js"></script>
+
+<header>🔍 Keşfet</header>
+<div class="grid" id="grid"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
+  authDomain: "pipstagram-5b98e.firebaseapp.com",
+  projectId: "pipstagram-5b98e",
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const grid = document.getElementById("grid");
+const interests = JSON.parse(localStorage.getItem("ai")) || {};
+
+const snap = await getDocs(collection(db,"posts"));
+let posts = [];
+
+snap.forEach(d=>{
+  posts.push(d.data());
+});
+
+posts.sort((a,b)=>{
+  return (interests[b.tag]||0)-(interests[a.tag]||0);
+});
+
+posts.forEach(p=>{
+  grid.innerHTML += `<img src="${p.image}">`;
+});
+</script>
+
 </body>
 </html>
+
