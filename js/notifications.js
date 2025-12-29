@@ -1,18 +1,18 @@
-import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "./app.js";
 
 const uid = localStorage.getItem("uid");
+const badge = document.getElementById("notifBadge");
 
-onSnapshot(
-  collection(db,"messages"),
-  snap=>{
-    snap.docChanges().forEach(change=>{
-      if(change.type==="added"){
-        const m = change.doc.data();
-        if(m.to === uid){
-          alert("📩 Yeni mesaj geldi!");
-        }
-      }
-    });
-  }
+const q = query(
+  collection(db,"notifications"),
+  where("to","==",uid),
+  where("seen","==",false)
 );
+
+onSnapshot(q, snap=>{
+  badge.textContent = snap.size;
+  badge.style.display = snap.size ? "inline-block" : "none";
+});
+
