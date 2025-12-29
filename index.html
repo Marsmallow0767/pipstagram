@@ -1,122 +1,55 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pipstagram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
-
-    header {
-      text-align: center;
-      padding: 15px;
-      font-size: 22px;
-      font-weight: bold;
-      border-bottom: 1px solid #222;
-    }
-
-    #feed {
-      padding-bottom: 70px;
-    }
-
-    .post {
-      margin-bottom: 20px;
-    }
-
-    .post img {
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    .post p {
-      padding: 5px 10px;
-    }
-
-    nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      height: 60px;
-      background: #111;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top: 1px solid #222;
-    }
-
-    nav button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 22px;
-      cursor: pointer;
-    }
-
-    #uploadModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #uploadBox {
-      background: #111;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-    }
-
-    #uploadBox input, #uploadBox textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 5px;
-      border: none;
-    }
-
-    #uploadBox button {
-      width: 100%;
-      padding: 10px;
-      background: #ff0050;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Pipstagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial}
+header{text-align:center;padding:15px;font-size:22px;border-bottom:1px solid #222}
+.post{margin-bottom:20px}
+.post img{width:100%}
+.actions{display:flex;gap:15px;padding:8px}
+button{background:none;border:none;color:white;font-size:20px;cursor:pointer}
+nav{position:fixed;bottom:0;width:100%;height:60px;background:#111;
+display:flex;justify-content:space-around;align-items:center}
+#popup,#profileEdit{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.9);justify-content:center;align-items:center}
+.box{background:#111;padding:20px;width:90%;max-width:400px;border-radius:10px}
+input,textarea{width:100%;margin-bottom:10px;padding:8px;border:none;border-radius:5px}
+</style>
 </head>
 <body>
 
 <header>📸 Pipstagram</header>
-
 <div id="feed"></div>
 
 <nav>
-  <button>🏠</button>
-  <button onclick="openUpload()">➕</button>
-  <button>💬</button>
-  <button>👤</button>
+<button onclick="loadFeed()">🏠</button>
+<button onclick="openReels()">🎬</button>
+<button onclick="openUpload()">➕</button>
+<button onclick="openProfile()">👤</button>
 </nav>
 
-<!-- UPLOAD MODAL -->
-<div id="uploadModal">
-  <div id="uploadBox">
-    <h3>Yeni Paylaşım</h3>
-    <input type="file" id="fileInput" />
-    <textarea id="captionInput" placeholder="Açıklama yaz..."></textarea>
-    <button onclick="uploadPost()">Paylaş 🚀</button>
-    <button onclick="closeUpload()" style="margin-top:10px;background:#333;">İptal</button>
+<!-- COMMENT POPUP -->
+<div id="popup">
+  <div class="box">
+    <h3>Yorumlar</h3>
+    <div id="comments"></div>
+    <input id="commentInput" placeholder="Yorum yaz">
+    <button onclick="sendComment()">Gönder</button>
+    <button onclick="closePopup()">Kapat</button>
+  </div>
+</div>
+
+<!-- PROFILE EDIT -->
+<div id="profileEdit">
+  <div class="box">
+    <h3>Profil Düzenle</h3>
+    <input id="username" placeholder="Kullanıcı adı">
+    <input type="file" id="pp">
+    <button onclick="saveProfile()">Kaydet</button>
+    <button onclick="closeProfile()">Kapat</button>
   </div>
 </div>
 
@@ -126,6 +59,8 @@
 
 
 
+
   
+
 
 
