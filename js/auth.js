@@ -1,21 +1,17 @@
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { auth } from "./app.js";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.register = async () => {
-  const email = emailInput.value;
-  const pass = passwordInput.value;
-
-  await createUserWithEmailAndPassword(auth, email, pass);
-  alert("Kayıt başarılı");
+window.register = async ()=>{
+  const e=email.value;
+  const p=pass.value;
+  await createUserWithEmailAndPassword(auth,e,p);
+  alert("Kayıt OK");
 };
 
-window.login = async () => {
-  const email = emailInput.value;
-  const pass = passwordInput.value;
-
-  await signInWithEmailAndPassword(auth, email, pass);
-  alert("Giriş başarılı");
+window.login = async ()=>{
+  const e=email.value;
+  const p=pass.value;
+  const user = await signInWithEmailAndPassword(auth,e,p);
+  localStorage.setItem("uid",user.user.uid);
+  location.href="index.html";
 };
