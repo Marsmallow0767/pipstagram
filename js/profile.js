@@ -1,37 +1,22 @@
-import { auth, db, storage } from "./firebase.js";
-import { doc, getDoc, setDoc } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+const uid=auth.currentUser.uid
 
-window.saveProfile = async () => {
-  const username = document.getElementById("username").value;
-  const file = document.getElementById("avatar").files[0];
+db.collection("users").doc(uid).get().then(d=>{
+ username.value=d.data().username
+})
 
-  let avatarURL = "";
-
-  if (file) {
-    const r = ref(storage, "avatars/" + auth.currentUser.uid);
-    await uploadBytes(r, file);
-    avatarURL = await getDownloadURL(r);
-  }
-
-  await setDoc(doc(db, "users", auth.currentUser.uid), {
-    username,
-    avatar: avatarURL
-  }, { merge: true });
-
-  alert("Profil güncellendi ✅");
-};
-
-async function loadProfile() {
-  const snap = await getDoc(doc(db, "users", auth.currentUser.uid));
-  if (snap.exists()) {
-    username.value = snap.data().username || "";
-    avatarImg.src = snap.data().avatar || "";
-  }
+function save(){
+ db.collection("users").doc(uid).update({
+  username:username.value
+ })
 }
 
-window.onload = loadProfile;
+db.collection("posts").where("userId","==",uid)
+.onSnapshot(s=>{
+ grid.innerHTML=""
+ s.forEach(p=>{
+  grid.innerHTML+=`<img src="${p.data().image}">`
+ })
+})
+
 
 
