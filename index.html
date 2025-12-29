@@ -8,14 +8,14 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
+      font-family: Arial, Helvetica, sans-serif;
       background: white;
       color: black;
     }
 
-    .dark {
-      background: #000;
-      color: #fff;
+    body.dark {
+      background: black;
+      color: white;
     }
 
     header {
@@ -25,31 +25,59 @@
       border-bottom: 1px solid #ccc;
     }
 
-    #profile img {
-      border-radius: 50%;
-      width: 90px;
+    button {
+      padding: 6px 10px;
+      margin: 5px;
     }
 
-    section {
+    #reels {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .reel {
+      height: 100vh;
+      position: relative;
+      scroll-snap-align: start;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .actions {
+      position: absolute;
+      right: 10px;
+      bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* 💬 Yorum modal */
+    #commentModal {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 60%;
+      background: #111;
+      color: white;
+      border-radius: 20px 20px 0 0;
       padding: 10px;
     }
 
-    #dmMessages {
-      height: 150px;
+    #comments {
+      height: 80%;
       overflow-y: auto;
-      border: 1px solid #ccc;
-      margin-bottom: 5px;
     }
 
-    #notifications p {
-      background: #eee;
-      padding: 5px;
-      margin: 5px 0;
-    }
-
-    button {
-      padding: 5px 10px;
-      margin-top: 5px;
+    input {
+      padding: 8px;
+      width: 80%;
     }
   </style>
 </head>
@@ -61,27 +89,33 @@
   <button id="darkToggle">🌙</button>
 </header>
 
-<section id="profile"></section>
-
-<section id="dm">
-  <h3>DM</h3>
-  <div id="dmMessages"></div>
-  <input id="dmInput" placeholder="Mesaj yaz">
-  <button onclick="sendDM()">Gönder</button>
+<!-- 🔐 LOGIN -->
+<section id="auth">
+  <input id="emailInput" placeholder="E-posta">
+  <input id="passwordInput" type="password" placeholder="Şifre">
+  <button onclick="login()">Giriş</button>
+  <button onclick="register()">Kayıt</button>
 </section>
 
-<section id="notifications">
-  <h3>Bildirimler</h3>
-</section>
+<!-- 🎬 REELS -->
+<div id="reels"></div>
+
+<!-- 💬 YORUM -->
+<div id="commentModal">
+  <div id="comments"></div>
+  <input id="commentInput" placeholder="Yorum yaz...">
+  <button onclick="sendComment()">Gönder</button>
+</div>
 
 <!-- JS -->
 <script type="module" src="app.js"></script>
-<script type="module" src="profile.js"></script>
-<script type="module" src="dm.js"></script>
-<script type="module" src="notifications.js"></script>
+<script type="module" src="auth.js"></script>
+<script type="module" src="reels.js"></script>
 <script src="dark.js"></script>
 
 </body>
 </html>
 
+
   
+
