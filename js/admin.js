@@ -1,5 +1,9 @@
-import { db } from "./firebase.js";
-import { deleteDoc, doc } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+db.collection("admins").doc(auth.currentUser.uid).get()
+.then(d=>{
+ if(!d.exists) location.href="/";
+});
 
-window.deletePost = id => deleteDoc(doc(db,"posts",id));
+function deletePost(id){
+ db.collection("posts").doc(id).delete();
+}
+
