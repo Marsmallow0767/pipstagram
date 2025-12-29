@@ -1,15 +1,18 @@
-import { auth, db } from "./app.js";
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { db } from "./app.js";
 
-const notif = document.getElementById("notifications");
+const uid = localStorage.getItem("uid");
 
-auth.onAuthStateChanged(user => {
-  if (!user) return;
-
-  onSnapshot(collection(db, "notifications", user.uid, "items"), snap => {
-    notif.innerHTML = "<h3>Bildirimler</h3>";
-    snap.forEach(n => {
-      notif.innerHTML += `<p>🔔 ${n.data().text}</p>`;
+onSnapshot(
+  collection(db,"messages"),
+  snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="added"){
+        const m = change.doc.data();
+        if(m.to === uid){
+          alert("📩 Yeni mesaj geldi!");
+        }
+      }
     });
-  });
-});
+  }
+);
