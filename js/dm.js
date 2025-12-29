@@ -1,18 +1,20 @@
 function send(){
  db.collection("messages").add({
-  from:auth.currentUser.uid,
-  text:msg.value,
-  time:firebase.firestore.FieldValue.serverTimestamp()
- })
+  from: auth.currentUser.uid,
+  to: chatUser,
+  msg: encrypt(msgInput.value),
+  time: firebase.firestore.FieldValue.serverTimestamp()
+ });
 }
 
 db.collection("messages")
-.orderBy("time")
+.where("to","==",auth.currentUser.uid)
 .onSnapshot(s=>{
- chat.innerHTML=""
+ chat.innerHTML="";
  s.forEach(m=>{
-  chat.innerHTML+=`<p>${m.data().text}</p>`
- })
-})
+  chat.innerHTML+=`<p>${decrypt(m.data().msg)}</p>`;
+ });
+});
+
 
 
