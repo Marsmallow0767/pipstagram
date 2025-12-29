@@ -1,20 +1,29 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<title>Bildirimler</title>
-</head>
-<body>
+import { db, auth } from "./firebase.js";
+import {
+  addDoc, collection, onSnapshot, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<h2>🔔 Bildirimler</h2>
+export const sendNotification = async (to, type) => {
+  await addDoc(collection(db,"notifications"),{
+    to,
+    from: auth.currentUser.uid,
+    type,
+    time: Date.now()
+  });
+};
 
-<div id="notif"></div>
+const q = query(
+  collection(db,"notifications"),
+  where("to","==",auth.currentUser.uid)
+);
 
-<script type="module" src="firebase.js"></script>
-<script type="module" src="notification.js"></script>
+onSnapshot(q, snap => {
+  notif.innerHTML="";
+  snap.forEach(n=>{
+    notif.innerHTML += `<p>🔔 ${n.data().type}</p>`;
+  });
+});
 
-</body>
-</html>
 
 
 
