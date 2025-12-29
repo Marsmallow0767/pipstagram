@@ -1,29 +1,22 @@
-import { auth } from "./firebase.js";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+function login(){
+ auth.signInWithEmailAndPassword(email.value, password.value)
+}
 
-window.login = () => {
-  const e = email.value;
-  const p = password.value;
-  signInWithEmailAndPassword(auth, e, p);
-};
+function register(){
+ auth.createUserWithEmailAndPassword(email.value, password.value)
+ .then(res=>{
+  db.collection("users").doc(res.user.uid).set({
+    username: email.value.split("@")[0],
+    photo: "",
+    followers: [],
+    following: []
+  })
+ })
+}
 
-window.register = () => {
-  const e = email.value;
-  const p = password.value;
-  createUserWithEmailAndPassword(auth, e, p);
-};
-
-window.logout = () => signOut(auth);
-
-onAuthStateChanged(auth, user => {
-  if (user) {
-    loginPage.style.display = "none";
-    app.style.display = "block";
-  }
-});
+auth.onAuthStateChanged(u=>{
+ if(u){
+  location.href="index.html"
+ }
+})
 
