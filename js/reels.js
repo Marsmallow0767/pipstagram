@@ -1,8 +1,10 @@
-db.collection("posts").onSnapshot(s=>{
+db.collection("reels")
+.orderBy("createdAt","desc")
+.onSnapshot(s=>{
  reels.innerHTML="";
- s.forEach(v=>{
-  reels.innerHTML += `
-   <video src="${v.data().image}" autoplay muted loop></video>
+ s.forEach(r=>{
+  reels.innerHTML+=`
+   <video src="${r.data().video}" autoplay loop controls></video>
   `;
  });
 });
