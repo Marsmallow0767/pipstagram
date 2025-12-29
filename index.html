@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Pipstagram</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{
   margin:0;
@@ -40,7 +41,7 @@ body{
   cursor:pointer;
 }
 
-/* HEADER */
+/* APP */
 header{
   display:flex;
   justify-content:space-between;
@@ -48,13 +49,12 @@ header{
   border-bottom:1px solid #222;
 }
 
-/* FEED */
 #feed img{
   width:100%;
   margin-bottom:10px;
 }
 
-/* BOTTOM NAV */
+/* NAV */
 nav{
   position:fixed;
   bottom:0;
@@ -82,11 +82,11 @@ nav button{
   <h1>📸 Pipstagram</h1>
   <input id="email" type="email" placeholder="E-posta">
   <input id="pass" type="password" placeholder="Şifre">
-  <button onclick="login()">Giriş Yap</button>
   <button onclick="register()">Kaydol</button>
+  <button onclick="login()">Giriş Yap</button>
 </div>
 
-<!-- APP -->
+<!-- APP SCREEN -->
 <div id="app" class="hidden">
 
 <header>
@@ -109,7 +109,7 @@ nav button{
 
 </div>
 
-<!-- FIREBASE -->
+<!-- FIREBASE (COMPAT – ÇAKIŞMA YOK) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
@@ -117,24 +117,29 @@ nav button{
 const firebaseConfig = {
   apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
   authDomain: "pipstagram-5b98e.firebaseapp.com",
-  projectId: "pipstagram-5b98e"
+  projectId: "pipstagram-5b98e",
+  storageBucket: "pipstagram-5b98e.appspot.com",
+  messagingSenderId: "894857861700",
+  appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-function login(){
-  auth.signInWithEmailAndPassword(
-    document.getElementById("email").value,
-    document.getElementById("pass").value
-  ).catch(e=>alert(e.message));
+function register(){
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("pass").value;
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .catch(err => alert(err.message));
 }
 
-function register(){
-  auth.createUserWithEmailAndPassword(
-    document.getElementById("email").value,
-    document.getElementById("pass").value
-  ).catch(e=>alert(e.message));
+function login(){
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("pass").value;
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => alert(err.message));
 }
 
 auth.onAuthStateChanged(user=>{
@@ -154,6 +159,7 @@ auth.onAuthStateChanged(user=>{
 
 
   
+
 
 
 
