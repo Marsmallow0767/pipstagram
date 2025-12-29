@@ -1,31 +1,29 @@
-import { getAuth } from "firebase/auth";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
-import { db } from "./app.js";
+import { auth, db } from "./app.js";
+import {
+  collection, addDoc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const auth = getAuth();
+const box = document.getElementById("dmMessages");
+const input = document.getElementById("dmInput");
 
-function chatId(uid1, uid2) {
-  return [uid1, uid2].sort().join("_");
-}
+window.sendDM = async () => {
+  if (!input.value) return;
 
-window.sendDM = async (toUid, text) => {
-  const cid = chatId(auth.currentUser.uid, toUid);
-
-  await addDoc(collection(db, "chats", cid, "messages"), {
-    text,
-    sender: auth.currentUser.uid,
+  await addDoc(collection(db, "globalDM"), {
+    text: input.value,
+    uid: auth.currentUser.uid,
     time: Date.now()
   });
+
+  input.value = "";
 };
 
-window.loadDM = (toUid) => {
-  const cid = chatId(auth.currentUser.uid, toUid);
-
-  onSnapshot(collection(db, "chats", cid, "messages"), snap => {
-    messages.innerHTML = "";
-    snap.forEach(d => {
-      messages.innerHTML += `<div>${d.data().text}</div>`;
+onSnapshot(
+  query(collection(db, "globalDM"), orderBy("time")),
+  snap => {
+    box.innerHTML = "";
+    snap.forEach(m => {
+      box.innerHTML += `<p>${m.data().text}</p>`;
     });
-  });
-};
-
+  }
+);
