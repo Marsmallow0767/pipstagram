@@ -1,11 +1,21 @@
-// Firebase CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-// 🔥 Firebase config (SENİN PROJE)
 const firebaseConfig = {
-  apiKey: "AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
+  apiKey: "API_KEY",
   authDomain: "pipstagram-5b98e.firebaseapp.com",
   projectId: "pipstagram-5b98e",
   storageBucket: "pipstagram-5b98e.firebasestorage.app",
@@ -13,26 +23,60 @@ const firebaseConfig = {
   appId: "1:894857861700:web:1d0c9028ed4125ecf43a11"
 };
 
-// Init
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-// 🔐 Login kontrolü
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    console.log("Kullanıcı giriş yapmadı");
-  } else {
-    console.log("Giriş yapıldı:", user.uid);
-  }
-});
+const feed = document.getElementById("feed");
 
-// 🔔 Bildirim fonksiyonu
-export async function sendNotification(toUid, text) {
-  await addDoc(collection(db, "notifications", toUid, "items"), {
-    text,
-    time: Date.now()
+// 🟢 FEED YÜKLE
+async function loadFeed() {
+  feed.innerHTML = "";
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    feed.innerHTML += `
+      <div class="post">
+        <img src="${data.image}" />
+        <p>${data.caption}</p>
+      </div>
+    `;
   });
 }
+
+loadFeed();
+
+// 🟢 UPLOAD
+window.openUpload = () => {
+  document.getElementById("uploadModal").style.display = "flex";
+};
+
+window.closeUpload = () => {
+  document.getElementById("uploadModal").style.display = "none";
+};
+
+window.uploadPost = async () => {
+  const file = document.getElementById("fileInput").files[0];
+  const caption = document.getElementById("captionInput").value;
+
+  if (!file) return alert("Dosya seç!");
+
+  const fileRef = ref(storage, `posts/${Date.now()}_${file.name}`);
+  await uploadBytes(fileRef, file);
+  const imageURL = await getDownloadURL(fileRef);
+
+  await addDoc(collection(db, "posts"), {
+    image: imageURL,
+    caption: caption,
+    createdAt: Date.now()
+  });
+
+  closeUpload();
+  loadFeed();
+};
+
+
 
 
