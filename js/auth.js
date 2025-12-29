@@ -1,62 +1,21 @@
-import { auth, db } from "./firebase.js";
-import { auth, db } from "./firebase.js";
-
+import { auth } from "./app.js";
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-import {
-  setDoc,
-  doc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+window.register = async () => {
+  const email = emailInput.value;
+  const pass = passwordInput.value;
 
-// BUTTON EVENTLERİ
-document.getElementById("registerBtn").addEventListener("click", register);
-document.getElementById("loginBtn").addEventListener("click", login);
+  await createUserWithEmailAndPassword(auth, email, pass);
+  alert("Kayıt başarılı");
+};
 
-// KAYIT
-async function register() {
-  if (!username.value) {
-    alert("Kullanıcı adı gir");
-    return;
-  }
+window.login = async () => {
+  const email = emailInput.value;
+  const pass = passwordInput.value;
 
-  const cred = await createUserWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  );
-
-  await setDoc(doc(db, "users", cred.user.uid), {
-    username: username.value,
-    email: email.value,
-    createdAt: Date.now()
-  });
-}
-
-// GİRİŞ
-async function login() {
-  await signInWithEmailAndPassword(
-    auth,
-    email.value,
-    password.value
-  );
-}
-
-// ÇIKIŞ
-window.logout = () => signOut(auth);
-
-// OTURUM KONTROL
-onAuthStateChanged(auth, user => {
-  if (user) {
-    authBox.style.display = "none";
-    app.style.display = "block";
-  } else {
-    authBox.style.display = "block";
-    app.style.display = "none";
-  }
-});
-
+  await signInWithEmailAndPassword(auth, email, pass);
+  alert("Giriş başarılı");
+};
