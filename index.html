@@ -5,20 +5,27 @@
 <title>Pipstagram</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;background:#000;color:#fff;font-family:Arial}
+:root{
+--bg:#000;--text:#fff;--card:#111;
+}
+.light{
+--bg:#fff;--text:#000;--card:#eee;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial}
 .hidden{display:none}
-header{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
-nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:#000;border-top:1px solid #222}
-nav button{background:none;border:none;color:white;font-size:22px}
+header{padding:10px;border-bottom:1px solid #333;display:flex;justify-content:space-between}
+nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:var(--bg);border-top:1px solid #333}
+nav button{background:none;border:none;color:var(--text);font-size:22px}
 section{padding:10px;padding-bottom:80px}
-input,button{padding:10px;margin:5px;border-radius:6px;border:none}
+button,input{padding:10px;border-radius:6px;border:none;margin:5px}
 button{background:#0095f6;color:white}
 video{width:100%;height:100vh;object-fit:cover}
-.reelActions{position:absolute;right:10px;bottom:100px}
-.reelActions button{display:block;margin:10px 0}
-.user{padding:10px;border-bottom:1px solid #222;cursor:pointer}
+.post{background:var(--card);padding:10px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.grid img{width:100%;aspect-ratio:1/1;object-fit:cover}
 </style>
 </head>
+
 <body>
 
 <div id="login">
@@ -33,43 +40,30 @@ video{width:100%;height:100vh;object-fit:cover}
 
 <header>
 <b>Pipstagram</b>
-<span onclick="show('notifications')">🔔</span>
+<div>
+<button onclick="toggleMode()">🌙</button>
+<button onclick="show('explore')">🔍</button>
+</div>
 </header>
 
 <section id="reels"></section>
 
-<section id="comments" class="hidden">
-<h3>Yorumlar</h3>
-<input id="commentText" placeholder="Yorum yaz">
-<button onclick="sendComment()">Gönder</button>
-<div id="commentList"></div>
+<section id="upload" class="hidden">
+<input type="file" id="postFile">
+<input id="caption" placeholder="Açıklama">
+<button onclick="uploadPost()">Paylaş</button>
 </section>
 
-<section id="dm" class="hidden">
-<h3>DM</h3>
-<div id="dmUsers"></div>
-<div id="chat" class="hidden">
-<div id="messages"></div>
-<input id="msgText" placeholder="Mesaj">
-<button onclick="sendMessage()">Gönder</button>
-</div>
-</section>
+<section id="explore" class="hidden"></section>
 
 <section id="profile" class="hidden">
-<h3>Profil Düzenle</h3>
-<input id="newUsername" placeholder="Kullanıcı adı">
-<input id="photoUrl" placeholder="Profil foto URL">
-<button onclick="saveProfile()">Kaydet</button>
-</section>
-
-<section id="notifications" class="hidden">
-<h3>Bildirimler</h3>
-<div id="notifyList"></div>
+<h3>Profil</h3>
+<div class="grid" id="profilePosts"></div>
 </section>
 
 <nav>
 <button onclick="show('reels')">🎬</button>
-<button onclick="show('dm')">💬</button>
+<button onclick="show('upload')">➕</button>
 <button onclick="show('profile')">👤</button>
 </nav>
 
@@ -78,112 +72,95 @@ video{width:100%;height:100vh;object-fit:cover}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 firebase.initializeApp({
 apiKey:"AIzaSyCWmJVnZ4LIB07cPM8t_Run-1indRrDm9s",
 authDomain:"pipstagram-5b98e.firebaseapp.com",
-projectId:"pipstagram-5b98e"
+projectId:"pipstagram-5b98e",
+storageBucket:"pipstagram-5b98e.appspot.com"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-let activeReel=null, activeChat=null;
+const storage=firebase.storage();
+let reelIndex=0;
 
 function show(id){
 document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 }
 
-function register(){
-auth.createUserWithEmailAndPassword(email.value,pass.value)
-.then(r=>db.collection("users").doc(r.user.uid).set({username:email.value.split("@")[0]}));
+function toggleMode(){
+document.body.classList.toggle("light");
 }
-function loginUser(){auth.signInWithEmailAndPassword(email.value,pass.value);}
+
+/* AUTH */
+function register(){
+auth.createUserWithEmailAndPassword(email.value,pass.value);
+}
+function loginUser(){
+auth.signInWithEmailAndPassword(email.value,pass.value);
+}
 
 auth.onAuthStateChanged(u=>{
 if(u){
 login.classList.add("hidden");
 app.classList.remove("hidden");
-loadReels(); loadDMUsers(); loadNotifications();
+loadReels();
+loadExplore();
+loadProfile();
 }
 });
 
-/* 🎬 REELS */
+/* 🎬 REELS SWIPE */
 function loadReels(){
 db.collection("reels").onSnapshot(s=>{
 reels.innerHTML="";
 s.forEach(d=>{
-reels.innerHTML+=`
-<div style="position:relative">
-<video src="${d.data().url}" autoplay loop muted></video>
-<div class="reelActions">
-<button onclick="likeReel('${d.id}')">❤️</button>
-<button onclick="openComments('${d.id}')">💬</button>
-</div>
-</div>`;
+reels.innerHTML+=`<video src="${d.data().url}" muted autoplay loop></video>`;
 });
 });
-}
-
-/* ❤️ LIKE */
-function likeReel(id){
-db.collection("likes").doc(auth.currentUser.uid+"_"+id).set({
-reel:id, uid:auth.currentUser.uid
-});
-db.collection("notifications").add({to:"owner",text:"Reels beğenildi"});
-}
-
-/* 💬 COMMENT */
-function openComments(id){activeReel=id;show("comments");}
-function sendComment(){
-db.collection("comments").add({
-reel:activeReel,
-text:commentText.value,
-uid:auth.currentUser.uid
+reels.addEventListener("wheel",e=>{
+if(e.deltaY>0) reelIndex++;
+else reelIndex--;
+reelIndex=Math.max(0,reelIndex);
+reels.children[reelIndex]?.scrollIntoView({behavior:"smooth"});
 });
 }
 
-/* 💬 DM */
-function loadDMUsers(){
-db.collection("users").onSnapshot(s=>{
-dmUsers.innerHTML="";
-s.forEach(u=>{
-if(u.id!==auth.currentUser.uid)
-dmUsers.innerHTML+=`<div class="user" onclick="openChat('${u.id}')">${u.data().username}</div>`;
+/* ➕ POST UPLOAD */
+function uploadPost(){
+const file=postFile.files[0];
+const ref=storage.ref("posts/"+Date.now()+file.name);
+ref.put(file).then(()=>ref.getDownloadURL().then(url=>{
+db.collection("posts").add({
+uid:auth.currentUser.uid,
+url,caption:caption.value,
+likes:0
 });
-});
+}));
 }
-function openChat(uid){
-activeChat=uid; chat.classList.remove("hidden");
-db.collection("dm").where("chat","==",[auth.currentUser.uid,uid].sort().join("_"))
+
+/* 🔍 EXPLORE */
+function loadExplore(){
+db.collection("posts").orderBy("likes","desc").limit(12)
 .onSnapshot(s=>{
-messages.innerHTML="";
-s.forEach(m=>messages.innerHTML+=`<p>${m.data().text}</p>`);
+explore.innerHTML="";
+s.forEach(p=>{
+explore.innerHTML+=`<img src="${p.data().url}" style="width:32%">`;
 });
-}
-function sendMessage(){
-db.collection("dm").add({
-chat:[auth.currentUser.uid,activeChat].sort().join("_"),
-text:msgText.value
 });
 }
 
-/* 🔔 NOTIFICATIONS */
-function loadNotifications(){
-db.collection("notifications").onSnapshot(s=>{
-notifyList.innerHTML="";
-s.forEach(n=>notifyList.innerHTML+=`<p>${n.data().text}</p>`);
+/* 👤 PROFILE */
+function loadProfile(){
+db.collection("posts").where("uid","==",auth.currentUser.uid)
+.onSnapshot(s=>{
+profilePosts.innerHTML="";
+s.forEach(p=>profilePosts.innerHTML+=`<img src="${p.data().url}">`);
 });
-}
-
-/* 👤 PROFILE EDIT */
-function saveProfile(){
-db.collection("users").doc(auth.currentUser.uid).update({
-username:newUsername.value,
-photo:photoUrl.value
-});
-alert("Profil güncellendi");
 }
 </script>
 </body>
@@ -198,7 +175,9 @@ alert("Profil güncellendi");
 
 
 
+
   
+
 
 
 
