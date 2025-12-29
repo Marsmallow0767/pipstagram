@@ -1,36 +1,43 @@
-import { db } from "./firebase.js";
-import {
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "./app.js";
 
-let index = 0;
+const reelsContainer = document.getElementById("reels");
 
-window.showReels = async () => {
-  feed.style.display = "none";
-  profile.style.display = "none";
-  reels.style.display = "block";
-  reels.innerHTML = "";
+if (!reelsContainer) {
+  console.error("reels div bulunamadı");
+}
 
-  const snap = await getDocs(collection(db, "reels"));
+// 🔥 Reels çek
+onSnapshot(collection(db, "reels"), snapshot => {
+  reelsContainer.innerHTML = "";
 
-  snap.forEach(d => {
-    reels.innerHTML += `
-      <video src="${d.data().videoUrl}"
-        class="reel"
-        muted
-        loop></video>
-    `;
+  snapshot.forEach(doc => {
+    const reel = doc.data();
+
+    const video = document.createElement("video");
+    video.src = reel.videoURL;
+    video.loop = true;
+    video.muted = true;
+    video.autoplay = true;
+    video.playsInline = true;
+
+    video.style.height = "100vh";
+    video.style.width = "100%";
+    video.style.objectFit = "cover";
+
+    reelsContainer.appendChild(video);
   });
+});
 
-  document.querySelectorAll(".reel")[0]?.play();
-};
-
-reels.addEventListener("wheel", e => {
-  const vids = document.querySelectorAll(".reel");
-  vids[index]?.pause();
-  index += e.deltaY > 0 ? 1 : -1;
-  index = Math.max(0, Math.min(index, vids.length - 1));
-  vids[index]?.play();
+// 📱 Swipe autoplay (TikTok hissi)
+document.addEventListener("scroll", () => {
+  document.querySelectorAll("video").forEach(v => {
+    const rect = v.getBoundingClientRect();
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+      v.play();
+    } else {
+      v.pause();
+    }
+  });
 });
 
