@@ -1,20 +1,26 @@
-import { auth, db } from "./app.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db, auth } from "./firebase.js";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const profile = document.getElementById("profile");
+window.sendMsg = async () => {
+  await addDoc(collection(db,"messages"), {
+    text: msg.value,
+    uid: auth.currentUser.uid,
+    time: Date.now()
+  });
+  msg.value="";
+};
 
-auth.onAuthStateChanged(async user => {
-  if (!user) {
-    profile.innerHTML = "<p>Giriş yapılmadı</p>";
-    return;
-  }
-
-  const snap = await getDoc(doc(db, "users", user.uid));
-  const data = snap.exists() ? snap.data() : {};
-
-  profile.innerHTML = `
-    <img src="${data.photoURL || 'https://via.placeholder.com/90'}">
-    <h3>${data.username || "Kullanıcı"}</h3>
-  `;
+const q = query(collection(db,"messages"), orderBy("time"));
+onSnapshot(q, snap => {
+  messages.innerHTML="";
+  snap.forEach(d=>{
+    messages.innerHTML += `<p>${d.data().text}</p>`;
+  });
 });
 
