@@ -1,25 +1,28 @@
-import { db, auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  query,
-  orderBy
+  collection, addDoc, query, where, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+const to = new URLSearchParams(location.search).get("uid");
+
 window.sendMsg = async () => {
-  await addDoc(collection(db,"messages"), {
+  await addDoc(collection(db, "messages"), {
+    from: auth.currentUser.uid,
+    to,
     text: msg.value,
-    uid: auth.currentUser.uid,
     time: Date.now()
   });
-  msg.value="";
+  msg.value = "";
 };
 
-const q = query(collection(db,"messages"), orderBy("time"));
+const q = query(
+  collection(db, "messages"),
+  where("from", "in", [auth.currentUser.uid, to])
+);
+
 onSnapshot(q, snap => {
-  messages.innerHTML="";
-  snap.forEach(d=>{
+  messages.innerHTML = "";
+  snap.forEach(d => {
     messages.innerHTML += `<p>${d.data().text}</p>`;
   });
 });
