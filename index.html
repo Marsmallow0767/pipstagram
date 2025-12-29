@@ -1,92 +1,155 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Pipstagram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Pipstagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #fafafa;
+}
+.hidden { display:none; }
 
-    .box {
-      background: white;
-      width: 320px;
-      padding: 30px;
-      border: 1px solid #dbdbdb;
-      text-align: center;
-    }
+header {
+  padding: 10px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  background: white;
+}
 
-    h1 {
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  background: white;
+  border-top: 1px solid #ddd;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #dbdbdb;
-      background: #fafafa;
-    }
+nav button {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  background: none;
+  border: none;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #0095f6;
-      border: none;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 5px;
-    }
+.page {
+  padding: 15px;
+  padding-bottom: 70px;
+}
 
-    button:hover {
-      opacity: 0.9;
-    }
+/* Login */
+.box {
+  max-width: 300px;
+  margin: 100px auto;
+  background: white;
+  padding: 20px;
+  border: 1px solid #ddd;
+}
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+button {
+  background: #0095f6;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
 
-    .switch {
-      margin-top: 15px;
-      font-size: 14px;
-      cursor: pointer;
-      color: #0095f6;
-    }
-  </style>
+/* Reels */
+.reel {
+  height: 400px;
+  background: black;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* DM */
+.chat {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="box" id="loginBox">
-  <h1>📸 Pipstagram</h1>
-
-  <input id="email" type="email" placeholder="E-posta">
-  <input id="password" type="password" placeholder="Şifre">
-
+<!-- LOGIN -->
+<div id="loginPage" class="box">
+  <h2 style="text-align:center">📸 Pipstagram</h2>
+  <input placeholder="E-posta">
+  <input placeholder="Şifre" type="password">
   <button onclick="login()">Giriş Yap</button>
-
-  <div class="switch" onclick="showRegister()">Hesabın yok mu? Kaydol</div>
-</div>
-
-<div class="box" id="registerBox" style="display:none">
-  <h1>📸 Pipstagram</h1>
-
-  <input id="regEmail" type="email" placeholder="E-posta">
-  <input id="regPassword" type="password" placeholder="Şifre">
-
   <button onclick="register()">Kaydol</button>
-
-  <div class="switch" onclick="showLogin()">Zaten hesabın var mı? Giriş</div>
 </div>
 
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
+<!-- APP -->
+<div id="app" class="hidden">
+
+<header id="title">Ana Sayfa</header>
+
+<div id="home" class="page">
+  <p>📸 Post akışı</p>
+  <div style="background:white;padding:10px">Bir post burada</div>
+</div>
+
+<div id="reels" class="page hidden">
+  <div class="reel">🎬 Reel 1</div>
+  <div class="reel">🎬 Reel 2</div>
+</div>
+
+<div id="dm" class="page hidden">
+  <div class="chat">👤 Ahmet</div>
+  <div class="chat">👤 Zeynep</div>
+</div>
+
+<div id="profile" class="page hidden">
+  <h3>👤 Profil</h3>
+  <p>Kullanıcı: pip_user</p>
+  <button onclick="logout()">Çıkış Yap</button>
+</div>
+
+<nav>
+  <button onclick="openPage('home','Ana Sayfa')">🏠</button>
+  <button onclick="openPage('reels','Reels')">🎬</button>
+  <button onclick="openPage('dm','DM')">💬</button>
+  <button onclick="openPage('profile','Profil')">👤</button>
+</nav>
+
+</div>
+
+<script>
+function login() {
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("app").classList.remove("hidden");
+}
+
+function register() {
+  alert("Kayıt başarılı (demo)");
+  login();
+}
+
+function logout() {
+  location.reload();
+}
+
+function openPage(id, title) {
+  document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.getElementById("title").innerText = title;
+}
+</script>
 
 </body>
 </html>
@@ -95,6 +158,7 @@
 
 
   
+
 
 
 
