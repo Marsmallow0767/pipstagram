@@ -1,45 +1,22 @@
-import { auth, db } from "./app.js";
-import {
-  collection, addDoc, onSnapshot, query, orderBy
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "./app.js";
 
-const box = document.getElementById("dmMessages");
+const uid = localStorage.getItem("uid");
+const chat = document.getElementById("messages");
 
-function chatId(uid1, uid2) {
-  return [uid1, uid2].sort().join("_");
-}
-
-window.sendDM = async () => {
-  const to = dmTarget.value;
-  const text = dmInput.value;
-  if (!to || !text) return;
-
-  const cid = chatId(auth.currentUser.uid, to);
-
-  await addDoc(collection(db, "chats", cid, "messages"), {
-    text,
-    sender: auth.currentUser.uid,
+window.send = async ()=>{
+  await addDoc(collection(db,"messages"),{
+    from: uid,
+    to: to.value,
+    text: msg.value,
     time: Date.now()
   });
-
-  dmInput.value = "";
 };
 
-window.loadDM = () => {
-  const to = dmTarget.value;
-  if (!to) return;
-
-  const cid = chatId(auth.currentUser.uid, to);
-
-  onSnapshot(
-    query(collection(db, "chats", cid, "messages"), orderBy("time")),
-    snap => {
-      box.innerHTML = "";
-      snap.forEach(m => {
-        box.innerHTML += `<p>${m.data().text}</p>`;
-      });
-    }
-  );
-};
-
-dmTarget.addEventListener("change", loadDM);
+const q = query(collection(db,"messages"), where("to","==",uid));
+onSnapshot(q,snap=>{
+  chat.innerHTML="";
+  snap.forEach(d=>{
+    chat.innerHTML += `<p>${d.data().text}</p>`;
+  });
+});
