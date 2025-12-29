@@ -1,57 +1,45 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Pipstagram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body { margin:0; font-family:Arial; }
-    header { padding:10px; text-align:center; font-size:22px; border-bottom:1px solid #ccc; }
-    section { padding:10px; }
-
-    img { border-radius:50%; }
-
-    #dmMessages {
-      height:200px;
-      border:1px solid #ccc;
-      overflow-y:auto;
-      margin-bottom:5px;
-    }
-
-    button { padding:6px 10px; margin:4px; }
-    input { padding:6px; }
-  </style>
+<meta charset="UTF-8">
+<title>Pipstagram</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:-apple-system;background:#fff}
+header{display:flex;justify-content:space-between;
+padding:10px;border-bottom:1px solid #ddd}
+nav{position:fixed;bottom:0;width:100%;
+display:flex;justify-content:space-around;
+border-top:1px solid #ddd;background:#fff}
+section{padding:10px;padding-bottom:60px}
+.post img{width:100%;border-radius:10px}
+.post{margin-bottom:20px}
+.icon{font-size:22px}
+.hidden{display:none}
+</style>
 </head>
 
 <body>
 
-<header>📸 Pipstagram</header>
+<header>
+  <b>📸 Pipstagram</b>
+  <span class="icon">✉️</span>
+</header>
 
-<section id="profile"></section>
+<section id="feed"></section>
 
-<section id="follow">
-  <h3>Takip</h3>
-  <input id="targetUid" placeholder="Takip edilecek UID">
-  <button onclick="followUser()">Takip Et</button>
-  <button onclick="unfollowUser()">Takibi Bırak</button>
-</section>
+<nav>
+  <span class="icon" onclick="loadFeed()">🏠</span>
+  <span class="icon" onclick="loadExplore()">🔥</span>
+  <span class="icon">➕</span>
+  <span class="icon">❤️</span>
+  <span class="icon">👤</span>
+</nav>
 
-<section id="dm">
-  <h3>DM</h3>
-  <input id="dmTarget" placeholder="Alıcı UID">
-  <div id="dmMessages"></div>
-  <input id="dmInput" placeholder="Mesaj yaz">
-  <button onclick="sendDM()">Gönder</button>
-</section>
-
-<script type="module" src="app.js"></script>
-<script type="module" src="profile-edit.js"></script>
-<script type="module" src="follow.js"></script>
-<script type="module" src="dm.js"></script>
-
+<script type="module" src="explore-ai.js"></script>
 </body>
 </html>
 
- 
+
+
 
