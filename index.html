@@ -5,16 +5,16 @@
 <title>Pipstagram</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;font-family:Arial;background:#000;color:#fff}
+body{margin:0;background:#000;color:#fff;font-family:Arial}
 .hidden{display:none}
-header{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
-nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:#000;border-top:1px solid #222}
+header{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #222}
+nav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;border-top:1px solid #222;background:#000}
 nav button{background:none;border:none;color:white;font-size:22px}
 section{padding:15px;padding-bottom:80px}
 input,button{padding:10px;margin:5px;border-radius:6px;border:none}
 button{background:#0095f6;color:white}
-.user{padding:10px;border-bottom:1px solid #222}
-.reel{height:70vh;background:#111;margin-bottom:20px;display:flex;align-items:center;justify-content:center}
+.reel{height:90vh;display:flex;align-items:center;justify-content:center;font-size:40px;border-bottom:1px solid #111}
+.user{padding:10px;border-bottom:1px solid #222;cursor:pointer}
 </style>
 </head>
 <body>
@@ -25,7 +25,7 @@ button{background:#0095f6;color:white}
   <input id="email" placeholder="E-posta">
   <input id="pass" type="password" placeholder="Şifre">
   <button onclick="register()">Kaydol</button>
-  <button onclick="login()">Giriş</button>
+  <button onclick="loginUser()">Giriş</button>
 </div>
 
 <!-- APP -->
@@ -33,41 +33,37 @@ button{background:#0095f6;color:white}
 
 <header>
   <b>Pipstagram</b>
-  <span onclick="show('dm')">💬</span>
+  <span onclick="show('notifications')">🔔</span>
 </header>
 
 <section id="home">
   <h3>Ana Sayfa</h3>
 </section>
 
-<section id="search" class="hidden">
-  <input id="searchName" placeholder="Kullanıcı adı">
-  <button onclick="searchUser()">Ara</button>
-  <div id="searchResult"></div>
-</section>
-
-<section id="reels" class="hidden">
-  <input type="file" id="reelFile">
-  <button onclick="uploadReel()">Reels Yükle</button>
-  <div id="reelList"></div>
-</section>
+<section id="reels" class="hidden"></section>
 
 <section id="dm" class="hidden">
   <h3>DM</h3>
-  <input id="dmTo" placeholder="Kime (uid)">
-  <input id="dmText" placeholder="Mesaj">
-  <button onclick="sendDM()">Gönder</button>
-  <div id="messages"></div>
+  <div id="userList"></div>
+  <div id="chat" class="hidden">
+    <div id="messages"></div>
+    <input id="msgText" placeholder="Mesaj">
+    <button onclick="sendMessage()">Gönder</button>
+  </div>
 </section>
 
 <section id="profile" class="hidden">
   <h3>Profil</h3>
-  <p id="uidText"></p>
+  <p id="myUid"></p>
+</section>
+
+<section id="notifications" class="hidden">
+  <h3>Bildirimler</h3>
+  <div id="notifyList"></div>
 </section>
 
 <nav>
   <button onclick="show('home')">🏠</button>
-  <button onclick="show('search')">🔍</button>
   <button onclick="show('reels')">🎬</button>
   <button onclick="show('dm')">💬</button>
   <button onclick="show('profile')">👤</button>
@@ -79,7 +75,6 @@ button{background:#0095f6;color:white}
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 firebase.initializeApp({
@@ -88,9 +83,9 @@ firebase.initializeApp({
   projectId: "pipstagram-5b98e"
 });
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+const auth=firebase.auth();
+const db=firebase.firestore();
+let activeChat=null;
 
 function show(id){
   document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
@@ -98,82 +93,70 @@ function show(id){
 }
 
 function register(){
-  auth.createUserWithEmailAndPassword(email.value, pass.value)
-    .then(u=>{
-      db.collection("users").doc(u.user.uid).set({
-        username: email.value.split("@")[0]
-      });
-    })
-    .catch(e=>alert(e.message));
+  auth.createUserWithEmailAndPassword(email.value,pass.value)
+    .then(r=>db.collection("users").doc(r.user.uid).set({email:email.value}));
 }
 
-function login(){
-  auth.signInWithEmailAndPassword(email.value, pass.value)
-    .catch(e=>alert(e.message));
+function loginUser(){
+  auth.signInWithEmailAndPassword(email.value,pass.value);
 }
 
 auth.onAuthStateChanged(u=>{
   if(u){
     login.classList.add("hidden");
     app.classList.remove("hidden");
-    uidText.innerText = "UID: " + u.uid;
+    myUid.innerText=u.uid;
+    loadUsers();
+    loadReels();
+    loadNotifications();
   }
 });
 
-/* 1️⃣ ARAMA */
-function searchUser(){
-  db.collection("users")
-    .where("username","==",searchName.value)
-    .get().then(s=>{
-      searchResult.innerHTML="";
-      s.forEach(d=>{
-        searchResult.innerHTML += `<div class="user">${d.data().username}
-        <button onclick="follow('${d.id}')">Takip Et</button></div>`;
-      });
+/* 1️⃣ REELS */
+function loadReels(){
+  db.collection("reels").onSnapshot(s=>{
+    reels.innerHTML="";
+    s.forEach(d=>reels.innerHTML+=`<div class="reel">🎬 Reels</div>`);
+  });
+}
+
+/* 2️⃣ DM */
+function loadUsers(){
+  db.collection("users").onSnapshot(s=>{
+    userList.innerHTML="";
+    s.forEach(d=>{
+      if(d.id!==auth.currentUser.uid)
+        userList.innerHTML+=`<div class="user" onclick="openChat('${d.id}')">${d.data().email}</div>`;
+    });
+  });
+}
+
+function openChat(uid){
+  activeChat=uid;
+  chat.classList.remove("hidden");
+  db.collection("dm").where("chat","==",[auth.currentUser.uid,uid].sort().join("_"))
+    .onSnapshot(s=>{
+      messages.innerHTML="";
+      s.forEach(m=>messages.innerHTML+=`<p>${m.data().text}</p>`);
     });
 }
 
-/* 2️⃣ TAKİP */
-function follow(uid){
-  db.collection("follows").add({
-    from: auth.currentUser.uid,
-    to: uid
-  });
-  alert("Takip edildi");
-}
-
-/* 3️⃣ DM */
-function sendDM(){
+function sendMessage(){
   db.collection("dm").add({
-    from: auth.currentUser.uid,
-    to: dmTo.value,
-    text: dmText.value,
-    time: Date.now()
+    chat:[auth.currentUser.uid,activeChat].sort().join("_"),
+    text:msgText.value
   });
 }
 
-db.collection("dm").onSnapshot(s=>{
-  messages.innerHTML="";
-  s.forEach(d=>{
-    messages.innerHTML += `<p>${d.data().text}</p>`;
-  });
-});
-
-/* 4️⃣ REELS */
-function uploadReel(){
-  const f = reelFile.files[0];
-  const ref = storage.ref("reels/"+Date.now()+f.name);
-  ref.put(f).then(()=>ref.getDownloadURL().then(url=>{
-    db.collection("reels").add({url});
-  }));
+/* 4️⃣ BİLDİRİM */
+function loadNotifications(){
+  db.collection("notifications")
+    .where("to","==",auth.currentUser.uid)
+    .onSnapshot(s=>{
+      notifyList.innerHTML="";
+      s.forEach(n=>notifyList.innerHTML+=`<p>${n.data().text}</p>`);
+    });
 }
-
-db.collection("reels").onSnapshot(s=>{
-  reelList.innerHTML="";
-  s.forEach(d=>{
-    reelList.innerHTML += `<div class="reel">🎬</div>`;
-  });
-});
 </script>
 </body>
 </html>
@@ -184,7 +167,9 @@ db.collection("reels").onSnapshot(s=>{
 
 
 
+
   
+
 
 
 
