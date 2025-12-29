@@ -1,33 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Pipstagram</title>
-<link rel="stylesheet" href="style.css">
+<header class="top">
+  <span>📸 Pipstagram</span>
+</header>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script src="firebase.js"></script>
-</head>
-<body>
-
-<header>📸 Pipstagram</header>
-
-<div id="stories"></div>
+<div id="stories" class="stories"></div>
 
 <div id="feed"></div>
 
-<nav>
- <a href="search.html">🔍</a>
- <a href="#" onclick="addPost()">➕</a>
- <a href="reels.html">🎬</a>
- <a href="profile.html">👤</a>
+<nav class="bottom">
+  <button onclick="goHome()">🏠</button>
+  <button onclick="goSearch()">🔍</button>
+  <button onclick="addPost()">➕</button>
+  <button onclick="goReels()">🎬</button>
+  <button onclick="goProfile()">👤</button>
 </nav>
 
-<script src="app.js"></script>
-</body>
-</html>
 
 
 
@@ -42,6 +28,7 @@
 
 
   
+
 
 
 
